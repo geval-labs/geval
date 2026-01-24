@@ -33,7 +33,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/geval-io/geval.git",
+    "url": "https://github.com/geval-labs/geval.git",
     "directory": "packages/cli"
   },
   "homepage": "https://geval.io",

@@ -20,14 +20,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/geval-io/geval/blob/main/LICENSE">
+  <a href="https://github.com/geval-labs/geval/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" />
   </a>
   <a href="https://www.npmjs.com/package/@geval/cli">
     <img src="https://img.shields.io/npm/v/@geval/cli.svg" alt="npm version" />
   </a>
-  <a href="https://github.com/geval-io/geval/actions">
-    <img src="https://github.com/geval-io/geval/workflows/CI/badge.svg" alt="CI" />
+  <a href="https://github.com/geval-labs/geval/actions">
+    <img src="https://github.com/geval-labs/geval/workflows/CI/badge.svg" alt="CI" />
   </a>
 </p>
 
@@ -348,7 +348,7 @@ Geval is **not** an eval platform. It's a decision authority.
 
 ```bash
 # Clone the repository
-git clone https://github.com/geval-io/geval.git
+git clone https://github.com/geval-labs/geval.git
 cd geval
 
 # Install dependencies
@@ -393,7 +393,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 - **Website**: [geval.io](https://geval.io)
 - **Documentation**: [geval.io/docs](https://geval.io/docs)
-- **GitHub**: [github.com/geval-io/geval](https://github.com/geval-io/geval)
+- **GitHub**: [github.com/geval-labs/geval](https://github.com/geval-labs/geval)
 - **npm**: [@geval/cli](https://www.npmjs.com/package/@geval/cli)
 
 ---

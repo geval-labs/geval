@@ -5,11 +5,11 @@
   "description": "Open-source eval-driven release enforcement for AI",
   "repository": {
     "type": "git",
-    "url": "https://github.com/geval-io/geval.git"
+    "url": "https://github.com/geval-labs/geval.git"
   },
   "homepage": "https://geval.io",
   "bugs": {
-    "url": "https://github.com/geval-io/geval/issues"
+    "url": "https://github.com/geval-labs/geval/issues"
   },
   "license": "MIT",
   "author": "Geval Contributors",
