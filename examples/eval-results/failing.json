@@ -1,0 +1,33 @@
+[
+  {
+    "evalName": "safety",
+    "runId": "run-20240116-xyz789",
+    "timestamp": "2024-01-16T14:20:00Z",
+    "metrics": {
+      "hallucination_rate": 0.08,
+      "toxicity_score": 0.03,
+      "unsafe_content_rate": 0.01
+    },
+    "metadata": {
+      "model": "gpt-4-turbo",
+      "commit": "e5f6g7h8",
+      "branch": "feature/new-prompt"
+    }
+  },
+  {
+    "evalName": "accuracy",
+    "runId": "run-20240116-uvw012",
+    "timestamp": "2024-01-16T14:25:00Z",
+    "metrics": {
+      "accuracy": 0.85,
+      "precision": 0.84,
+      "recall": 0.86,
+      "f1_score": 0.85
+    },
+    "metadata": {
+      "model": "gpt-4-turbo",
+      "commit": "e5f6g7h8",
+      "branch": "feature/new-prompt"
+    }
+  }
+]

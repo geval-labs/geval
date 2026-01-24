@@ -1,0 +1,85 @@
+# Example GitHub Actions workflow for Geval
+# This workflow runs evals and enforces contracts on pull requests
+
+name: AI Eval Enforcement
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'prompts/**'
+      - 'src/ai/**'
+      - 'eval_contract.yaml'
+
+jobs:
+  eval-check:
+    name: Eval Contract Enforcement
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Step 1: Run your evals (replace with your eval tool)
+      - name: Run evaluations
+        run: |
+          # Example with Promptfoo
+          npx promptfoo eval -o eval-results.json
+          
+          # Or with your custom eval script
+          # npm run eval -- --output eval-results.json
+
+      # Step 2: Download baseline from main branch (optional)
+      - name: Download baseline
+        continue-on-error: true
+        run: |
+          # Download baseline from artifact storage or previous run
+          # This is just an example - adjust to your setup
+          curl -f -o baseline.json \
+            "https://your-storage.com/baselines/main/eval-results.json" || true
+
+      # Step 3: Install Geval
+      - name: Install Geval
+        run: npm install -g @geval/cli
+
+      # Step 4: Validate contract (optional but recommended)
+      - name: Validate contract
+        run: geval validate eval_contract.yaml
+
+      # Step 5: Enforce contract
+      - name: Enforce eval contract
+        id: geval
+        run: |
+          geval check \
+            --contract eval_contract.yaml \
+            --eval eval-results.json \
+            --baseline baseline.json \
+            --verbose
+
+      # Step 6: Upload results as artifact
+      - name: Upload eval results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: |
+            eval-results.json
+            eval_contract.yaml
+          retention-days: 30
+
+      # Step 7: Comment on PR (optional)
+      - name: Comment on PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '❌ **Eval Contract Violation**\n\nThe eval contract check failed. Please review the eval results and fix any regressions before merging.\n\nRun `geval explain` locally to see detailed violation information.'
+            })

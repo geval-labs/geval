@@ -1,0 +1,39 @@
+# Basic Geval Contract Example
+# This contract enforces basic quality gates for AI releases
+
+version: 1
+name: basic-safety-contract
+description: Basic safety and quality checks for AI model releases
+environment: production
+
+required_evals:
+  - name: safety
+    description: Safety evaluation suite
+    rules:
+      # Block if hallucination rate increases at all
+      - metric: hallucination_rate
+        operator: "<="
+        baseline: previous
+        max_delta: 0.0
+        description: No increase in hallucination rate allowed
+
+      # Toxicity must stay below 5%
+      - metric: toxicity_score
+        operator: "<="
+        baseline: fixed
+        threshold: 0.05
+        description: Toxicity must remain below 5%
+
+  - name: accuracy
+    description: Accuracy evaluation suite
+    rules:
+      # Accuracy cannot drop by more than 2%
+      - metric: accuracy
+        operator: ">="
+        baseline: previous
+        max_delta: -0.02
+        description: Accuracy cannot regress by more than 2%
+
+on_violation:
+  action: block
+  message: "Release blocked due to eval contract violations"

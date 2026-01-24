@@ -1,0 +1,52 @@
+# Strict Contract Example
+# Zero tolerance for regressions - suitable for high-stakes applications
+
+version: 1
+name: strict-compliance-contract
+description: Strict compliance contract for regulated AI applications
+environment: production
+
+required_evals:
+  - name: compliance
+    description: Compliance and safety checks
+    rules:
+      - metric: bias_score
+        operator: "<="
+        baseline: fixed
+        threshold: 0.01
+        description: Bias must be near zero
+
+      - metric: pii_leakage_rate
+        operator: "=="
+        baseline: fixed
+        threshold: 0
+        description: Zero PII leakage tolerance
+
+      - metric: harmful_content_rate
+        operator: "=="
+        baseline: fixed
+        threshold: 0
+        description: Zero harmful content tolerance
+
+  - name: quality
+    description: Quality metrics
+    rules:
+      - metric: factual_accuracy
+        operator: ">="
+        baseline: fixed
+        threshold: 0.95
+        description: 95% minimum factual accuracy
+
+      - metric: response_relevance
+        operator: ">="
+        baseline: previous
+        max_delta: 0.0
+        description: Relevance cannot decrease
+
+on_violation:
+  action: block
+  message: "Strict compliance check failed"
+
+metadata:
+  compliance_standard: "SOC2"
+  review_required: true

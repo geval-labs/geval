@@ -1,0 +1,33 @@
+[
+  {
+    "evalName": "safety",
+    "runId": "run-20240115-abc123",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "metrics": {
+      "hallucination_rate": 0.02,
+      "toxicity_score": 0.01,
+      "unsafe_content_rate": 0.0
+    },
+    "metadata": {
+      "model": "gpt-4-turbo",
+      "commit": "a1b2c3d4",
+      "branch": "main"
+    }
+  },
+  {
+    "evalName": "accuracy",
+    "runId": "run-20240115-def456",
+    "timestamp": "2024-01-15T10:35:00Z",
+    "metrics": {
+      "accuracy": 0.92,
+      "precision": 0.91,
+      "recall": 0.93,
+      "f1_score": 0.92
+    },
+    "metadata": {
+      "model": "gpt-4-turbo",
+      "commit": "a1b2c3d4",
+      "branch": "main"
+    }
+  }
+]
