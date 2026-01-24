@@ -1,5 +1,5 @@
 {
-  "name": "@geval/cli",
+  "name": "@geval-labs/cli",
   "version": "0.0.1",
   "description": "CLI for Geval - eval-driven release enforcement",
   "bin": {
@@ -39,7 +39,7 @@
   "homepage": "https://geval.io",
   "license": "MIT",
   "dependencies": {
-    "@geval/core": "workspace:*",
+    "@geval/core": "*",
     "commander": "^11.1.0",
     "picocolors": "^1.0.0"
   },

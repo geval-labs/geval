@@ -1,5 +1,5 @@
 {
-  "name": "@geval/core",
+  "name": "@geval-labs/core",
   "version": "0.0.1",
   "description": "Core library for Geval - eval-driven release enforcement",
   "main": "./dist/index.js",
@@ -7,24 +7,24 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./contracts": {
+      "types": "./dist/contracts/index.d.ts",
       "import": "./dist/contracts/index.mjs",
-      "require": "./dist/contracts/index.js",
-      "types": "./dist/contracts/index.d.ts"
+      "require": "./dist/contracts/index.js"
     },
     "./engine": {
+      "types": "./dist/engine/index.d.ts",
       "import": "./dist/engine/index.mjs",
-      "require": "./dist/engine/index.js",
-      "types": "./dist/engine/index.d.ts"
+      "require": "./dist/engine/index.js"
     },
     "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
       "import": "./dist/adapters/index.mjs",
-      "require": "./dist/adapters/index.js",
-      "types": "./dist/adapters/index.d.ts"
+      "require": "./dist/adapters/index.js"
     }
   },
   "files": [

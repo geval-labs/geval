@@ -4,7 +4,7 @@ import { z } from "zod";
 // OPERATORS
 // =============================================================================
 
-export const ComparisonOperator = z.enum([
+export const ComparisonOperatorSchema = z.enum([
   "==",
   "!=",
   "<",
@@ -12,51 +12,51 @@ export const ComparisonOperator = z.enum([
   ">",
   ">=",
 ]);
-export type ComparisonOperator = z.infer<typeof ComparisonOperator>;
+export type ComparisonOperator = z.infer<typeof ComparisonOperatorSchema>;
 
 // =============================================================================
 // BASELINE TYPES
 // =============================================================================
 
-export const BaselineType = z.enum([
+export const BaselineTypeSchema = z.enum([
   "previous", // Last successful run
   "main", // Main branch artifact
   "fixed", // Fixed value
 ]);
-export type BaselineType = z.infer<typeof BaselineType>;
+export type BaselineType = z.infer<typeof BaselineTypeSchema>;
 
 // =============================================================================
 // DECISION STATUS
 // =============================================================================
 
-export const DecisionStatus = z.enum([
+export const DecisionStatusSchema = z.enum([
   "PASS",
   "BLOCK",
   "REQUIRES_APPROVAL",
 ]);
-export type DecisionStatus = z.infer<typeof DecisionStatus>;
+export type DecisionStatus = z.infer<typeof DecisionStatusSchema>;
 
 // =============================================================================
 // VIOLATION ACTION
 // =============================================================================
 
-export const ViolationAction = z.enum([
+export const ViolationActionSchema = z.enum([
   "block",
   "require_approval",
   "warn",
 ]);
-export type ViolationAction = z.infer<typeof ViolationAction>;
+export type ViolationAction = z.infer<typeof ViolationActionSchema>;
 
 // =============================================================================
 // ENVIRONMENT
 // =============================================================================
 
-export const Environment = z.enum([
+export const EnvironmentSchema = z.enum([
   "development",
   "staging",
   "production",
 ]);
-export type Environment = z.infer<typeof Environment>;
+export type Environment = z.infer<typeof EnvironmentSchema>;
 
 // =============================================================================
 // CONTRACT RULE SCHEMA
@@ -66,9 +66,9 @@ export const ContractRuleSchema = z.object({
   /** Name of the metric to evaluate */
   metric: z.string().min(1),
   /** Comparison operator */
-  operator: ComparisonOperator,
+  operator: ComparisonOperatorSchema,
   /** Type of baseline to compare against */
-  baseline: BaselineType,
+  baseline: BaselineTypeSchema,
   /** Maximum allowed delta from baseline (for relative comparisons) */
   maxDelta: z.number().optional(),
   /** Fixed threshold value (when baseline is 'fixed') */
@@ -98,7 +98,7 @@ export type RequiredEval = z.infer<typeof RequiredEvalSchema>;
 
 export const ViolationHandlerSchema = z.object({
   /** Action to take on violation */
-  action: ViolationAction,
+  action: ViolationActionSchema,
   /** Optional message template */
   message: z.string().optional(),
 });
@@ -116,7 +116,7 @@ export const EvalContractSchema = z.object({
   /** Optional description */
   description: z.string().optional(),
   /** Environment this contract applies to */
-  environment: Environment.optional().default("production"),
+  environment: EnvironmentSchema.optional().default("production"),
   /** Required eval suites */
   requiredEvals: z.array(RequiredEvalSchema).min(1),
   /** What to do on violation */
@@ -160,7 +160,7 @@ export type NormalizedEvalResult = z.infer<typeof NormalizedEvalResultSchema>;
 
 export const BaselineDataSchema = z.object({
   /** Type of baseline */
-  type: BaselineType,
+  type: BaselineTypeSchema,
   /** Metric values from baseline */
   metrics: z.record(MetricValueSchema),
   /** Source information */

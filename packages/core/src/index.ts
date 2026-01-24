@@ -27,38 +27,36 @@
  * @packageDocumentation
  */
 
-// Types - all public types
+// Re-export types
 export type {
-  // Core types
+  ComparisonOperator,
+  BaselineType,
+  DecisionStatus,
+  ViolationAction,
+  Environment,
   EvalContract,
   RequiredEval,
   ContractRule,
   ViolationHandler,
-  // Decision types
   Decision,
-  DecisionStatus,
   Violation,
-  // Eval types
   NormalizedEvalResult,
   BaselineData,
   MetricValue,
-  // Engine types
   EngineInput,
-  // Diff types
   EvalDiff,
   MetricDiff,
   ContractDiff,
-  // Adapter types
   EvalAdapter,
-  // Enums
-  ComparisonOperator,
-  BaselineType,
-  ViolationAction,
-  Environment,
 } from "./types/index.js";
 
-// Schemas for runtime validation
+// Re-export Zod schemas
 export {
+  ComparisonOperatorSchema,
+  BaselineTypeSchema,
+  DecisionStatusSchema,
+  ViolationActionSchema,
+  EnvironmentSchema,
   EvalContractSchema,
   ContractRuleSchema,
   RequiredEvalSchema,
@@ -66,11 +64,8 @@ export {
   BaselineDataSchema,
   DecisionSchema,
   ViolationSchema,
-  ComparisonOperator,
-  BaselineType,
-  DecisionStatus,
-  ViolationAction,
-  Environment,
+  MetricValueSchema,
+  ViolationHandlerSchema,
 } from "./types/index.js";
 
 // Contract functions
