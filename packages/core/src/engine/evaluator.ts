@@ -1,6 +1,5 @@
 import type {
   Decision,
-  EvalContract,
   NormalizedEvalResult,
   BaselineData,
   Violation,

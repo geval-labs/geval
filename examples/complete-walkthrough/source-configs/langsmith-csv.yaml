@@ -1,0 +1,37 @@
+# Source configuration for LangSmith CSV exports
+# This tells Geval how to extract metrics from your CSV file
+
+type: csv
+
+# Define which columns contain metrics and how to aggregate them
+metrics:
+  # Average accuracy across all rows
+  - column: accuracy
+    aggregate: avg
+    as: accuracy  # Optional: rename in output
+
+  # Average quality score
+  - column: quality_score
+    aggregate: avg
+
+  # 95th percentile latency
+  - column: latency
+    aggregate: p95
+    as: latency_p95
+
+  # Pass rate (percentage of "success" status)
+  - column: status
+    aggregate: pass_rate
+
+  # Hallucination rate (percentage where hallucination_detected is true)
+  - column: hallucination_detected
+    aggregate: pass_rate
+    as: hallucination_rate
+
+# Where to get the eval name
+evalName:
+  fixed: quality-metrics  # Use a fixed name (must match contract)
+
+# Optional: metadata columns
+metadata:
+  session: session_name

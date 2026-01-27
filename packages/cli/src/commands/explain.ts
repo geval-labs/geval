@@ -7,10 +7,9 @@ import {
   evaluate,
   parseEvalResult,
   formatDecision,
-  formatViolation,
   type NormalizedEvalResult,
   type BaselineData,
-} from "@geval/core";
+} from "@geval-labs/core";
 
 interface ExplainOptions {
   contract: string;

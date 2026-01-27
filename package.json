@@ -59,5 +59,9 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "@geval-labs/cli": "^0.0.2",
+    "@geval-labs/core": "^0.0.1"
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as fs from "node:fs";
 import * as path from "node:path";
 import pc from "picocolors";
@@ -5,7 +6,7 @@ import {
   parseEvalResult,
   diffEvalResults,
   type NormalizedEvalResult,
-} from "@geval/core";
+} from "@geval-labs/core";
 
 interface DiffOptions {
   previous: string;

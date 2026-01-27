@@ -1,0 +1,15 @@
+{
+  "evalName": "quality-metrics",
+  "runId": "run-2026-01-27-pass",
+  "timestamp": "2026-01-27T10:00:00Z",
+  "metrics": {
+    "accuracy": 0.92,
+    "latency_p95": 450,
+    "hallucination_rate": 0.02
+  },
+  "metadata": {
+    "model": "gpt-4",
+    "commit": "abc123",
+    "branch": "main"
+  }
+}

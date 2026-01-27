@@ -6,7 +6,7 @@ import {
   parseContractFromYaml,
   validateContract,
   ContractValidationError,
-} from "@geval/core";
+} from "@geval-labs/core";
 
 interface ValidateOptions {
   strict?: boolean;

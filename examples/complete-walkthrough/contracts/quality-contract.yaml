@@ -1,0 +1,36 @@
+# Geval Quality Contract
+# This defines the quality requirements for AI deployment
+
+version: 1
+name: ai-quality-gate
+description: Quality requirements for production AI deployment
+environment: production
+
+required_evals:
+  - name: quality-metrics
+    description: Core quality metrics that must be met
+    rules:
+      # Accuracy must be at least 85%
+      - metric: accuracy
+        operator: ">="
+        baseline: fixed
+        threshold: 0.85
+        description: Model accuracy must meet minimum threshold
+
+      # Latency p95 must be under 500ms
+      - metric: latency_p95
+        operator: "<="
+        baseline: fixed
+        threshold: 500
+        description: 95th percentile latency must be acceptable
+
+      # Hallucination rate must be under 5%
+      - metric: hallucination_rate
+        operator: "<="
+        baseline: fixed
+        threshold: 0.05
+        description: Hallucination rate must be minimal
+
+on_violation:
+  action: block
+  message: "Quality metrics did not meet production requirements. Please review and fix before deploying."

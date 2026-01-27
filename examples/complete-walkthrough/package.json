@@ -1,0 +1,22 @@
+{
+  "name": "geval-complete-walkthrough",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Complete walkthrough example for Geval",
+  "type": "module",
+  "scripts": {
+    "check:json": "bash scripts/check-json.sh",
+    "check:csv": "npx ts-node --esm scripts/check-csv.ts",
+    "ci": "npx ts-node --esm scripts/ci-integration.ts",
+    "all": "npm run check:json && npm run check:csv"
+  },
+  "dependencies": {
+    "@geval-labs/cli": "^0.0.3",
+    "@geval-labs/core": "^0.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

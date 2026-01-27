@@ -1,6 +1,6 @@
 {
   "name": "@geval-labs/core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Core library for Geval - eval-driven release enforcement",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -25,6 +25,11 @@
       "types": "./dist/adapters/index.d.ts",
       "import": "./dist/adapters/index.mjs",
       "require": "./dist/adapters/index.js"
+    },
+    "./sources": {
+      "types": "./dist/sources/index.d.ts",
+      "import": "./dist/sources/index.mjs",
+      "require": "./dist/sources/index.js"
     }
   },
   "files": [

@@ -95,5 +95,27 @@ export {
   parseEvalResult,
 } from "./adapters/index.js";
 
+// Source parsing (generic CSV/JSON/JSONL support)
+export type {
+  AggregationMethod,
+  MetricColumn,
+  SourceType,
+  EvalSourceConfig,
+  SourceRow,
+  AggregatedMetrics,
+} from "./sources/index.js";
+
+export {
+  AggregationMethodSchema,
+  MetricColumnSchema,
+  SourceTypeSchema,
+  EvalSourceConfigSchema,
+  parseCsv,
+  isCsv,
+  aggregate,
+  parseEvalSource,
+  validateSourceColumns,
+} from "./sources/index.js";
+
 // Version
 export const VERSION = "0.0.1";

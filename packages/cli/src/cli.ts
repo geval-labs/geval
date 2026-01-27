@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { VERSION } from "@geval/core";
+import { VERSION } from "@geval-labs/core";
 import { checkCommand } from "./commands/check.js";
 import { diffCommand } from "./commands/diff.js";
 import { explainCommand } from "./commands/explain.js";

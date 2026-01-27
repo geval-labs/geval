@@ -1,0 +1,11 @@
+id,inputs,reference_outputs,session_name,status,latency,accuracy,quality_score,hallucination_detected
+row-001,"{""query"": ""What is the capital of France?""}","{""answer"": ""Paris""}",eval-session-001,success,0.12,0.95,0.92,false
+row-002,"{""query"": ""Explain quantum computing""}","{""answer"": ""...""}",eval-session-001,success,0.45,0.88,0.85,false
+row-003,"{""query"": ""Write a poem about AI""}","{""answer"": ""...""}",eval-session-001,success,0.38,0.91,0.89,false
+row-004,"{""query"": ""What is 2+2?""}","{""answer"": ""4""}",eval-session-001,success,0.08,1.0,0.98,false
+row-005,"{""query"": ""Tell me about history""}","{""answer"": ""...""}",eval-session-001,success,0.52,0.82,0.78,true
+row-006,"{""query"": ""Debug this code""}","{""answer"": ""...""}",eval-session-001,error,0.95,0.65,0.60,true
+row-007,"{""query"": ""Summarize this article""}","{""answer"": ""...""}",eval-session-001,success,0.33,0.94,0.91,false
+row-008,"{""query"": ""Translate to Spanish""}","{""answer"": ""...""}",eval-session-001,success,0.21,0.97,0.95,false
+row-009,"{""query"": ""Generate test cases""}","{""answer"": ""...""}",eval-session-001,success,0.67,0.89,0.86,false
+row-010,"{""query"": ""Explain this error""}","{""answer"": ""...""}",eval-session-001,success,0.28,0.93,0.90,false

@@ -1,0 +1,15 @@
+{
+  "evalName": "quality-metrics",
+  "runId": "run-2026-01-27-fail",
+  "timestamp": "2026-01-27T11:00:00Z",
+  "metrics": {
+    "accuracy": 0.78,
+    "latency_p95": 650,
+    "hallucination_rate": 0.08
+  },
+  "metadata": {
+    "model": "gpt-3.5-turbo",
+    "commit": "def456",
+    "branch": "feature/new-prompt"
+  }
+}

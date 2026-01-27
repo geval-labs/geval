@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as fs from "node:fs";
 import * as path from "node:path";
 import pc from "picocolors";
@@ -10,7 +11,7 @@ import {
   type Decision,
   type NormalizedEvalResult,
   type BaselineData,
-} from "@geval/core";
+} from "@geval-labs/core";
 
 interface CheckOptions {
   contract: string;

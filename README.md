@@ -23,8 +23,8 @@
   <a href="https://github.com/geval-labs/geval/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" />
   </a>
-  <a href="https://www.npmjs.com/package/@geval/cli">
-    <img src="https://img.shields.io/npm/v/@geval/cli.svg" alt="npm version" />
+  <a href="https://www.npmjs.com/package/@geval-labs/cli">
+    <img src="https://img.shields.io/npm/v/@geval-labs/cli.svg" alt="npm version" />
   </a>
   <a href="https://github.com/geval-labs/geval/actions">
     <img src="https://github.com/geval-labs/geval/workflows/CI/badge.svg" alt="CI" />
@@ -69,7 +69,7 @@ Geval:
 ### Installation
 
 ```bash
-npm install -g @geval/cli
+npm install -g @geval-labs/cli
 ```
 
 ### 1. Define your contract
@@ -156,7 +156,7 @@ jobs:
         run: npm run eval # Your eval command
 
       - name: Install Geval
-        run: npm install -g @geval/cli
+        run: npm install -g @geval-labs/cli
 
       - name: Enforce contracts
         run: |
@@ -263,11 +263,12 @@ on_violation:                 # What to do on failure
 Geval automatically detects and parses results from:
 
 - **Promptfoo** - JSON output from promptfoo
-- **LangSmith** - Exported evaluation results
+- **LangSmith** - Exported evaluation results (JSON & CSV)
 - **OpenEvals** - OpenAI evals format
 - **Generic** - Geval's native JSON format
+- **CSV** - Any CSV with configurable column mapping
 
-### Generic Format
+### Generic JSON Format
 
 ```json
 {
@@ -283,6 +284,28 @@ Geval automatically detects and parses results from:
   }
 }
 ```
+
+### CSV Support (Any Tool!)
+
+Parse CSV files from **any** eval tool with custom column mapping:
+
+```typescript
+import { parseEvalSource } from "@geval-labs/core";
+
+const csvContent = fs.readFileSync("langsmith-export.csv", "utf-8");
+
+const result = parseEvalSource(csvContent, {
+  type: "csv",
+  metrics: [
+    { column: "accuracy", aggregate: "avg" },
+    { column: "latency", aggregate: "p95" },
+    { column: "status", aggregate: "pass_rate" }
+  ],
+  evalName: { fixed: "my-eval" }
+});
+```
+
+Supported aggregations: `avg`, `sum`, `min`, `max`, `p50`, `p90`, `p95`, `p99`, `pass_rate`, `fail_rate`, `count`
 
 ## Why Geval
 
@@ -394,7 +417,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 - **Website**: [geval.io](https://geval.io)
 - **Documentation**: [geval.io/docs](https://geval.io/docs)
 - **GitHub**: [github.com/geval-labs/geval](https://github.com/geval-labs/geval)
-- **npm**: [@geval/cli](https://www.npmjs.com/package/@geval/cli)
+- **npm**: [@geval-labs/cli](https://www.npmjs.com/package/@geval-labs/cli) | [@geval-labs/core](https://www.npmjs.com/package/@geval-labs/core)
 
 ---
 
