@@ -137,11 +137,57 @@ Violations
 
 ## Working with CSV Files (LangSmith, Braintrust, etc.)
 
-Many eval tools export CSV files. Geval can parse any CSV with a source configuration.
+Many eval tools export CSV files. Geval can parse any CSV **directly in the CLI** by adding a `sources` section to your contract.
 
-### Example: LangSmith CSV Export
+### The Best Approach: Inline Source Config (Recommended for CI)
 
-Your CSV file (`langsmith-export.csv`):
+Add a `sources` section to your contract - no extra files needed!
+
+**Contract with inline CSV config (`eval-contract.yaml`):**
+
+```yaml
+version: 1
+name: my-ai-quality-gate
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SOURCES: How to parse different eval result formats
+# ═══════════════════════════════════════════════════════════════════════════════
+sources:
+  csv:
+    metrics:
+      - column: accuracy
+        aggregate: avg
+      - column: quality_score
+        aggregate: avg
+      - column: latency
+        aggregate: p95
+      - column: status
+        aggregate: pass_rate
+    evalName:
+      fixed: quality-check
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RULES: What must pass before shipping
+# ═══════════════════════════════════════════════════════════════════════════════
+required_evals:
+  - name: quality-check
+    rules:
+      - metric: accuracy
+        operator: ">="
+        baseline: fixed
+        threshold: 0.85
+
+      - metric: status
+        operator: ">="
+        baseline: fixed
+        threshold: 0.95
+
+on_violation:
+  action: block
+  message: "Quality metrics did not meet requirements"
+```
+
+**Your CSV file (`eval-results.csv`):**
 ```csv
 id,inputs,outputs,status,latency,accuracy,quality_score
 1,"{...}","{...}",success,0.12,0.95,0.88
@@ -149,24 +195,46 @@ id,inputs,outputs,status,latency,accuracy,quality_score
 3,"{...}","{...}",error,0.08,0.78,0.65
 ```
 
-Create a source config (`source-config.yaml`):
-```yaml
-# Define how to extract metrics from your CSV
-type: csv
-metrics:
-  - column: accuracy
-    aggregate: avg
-  - column: quality_score
-    aggregate: avg
-  - column: latency
-    aggregate: p95
-  - column: status
-    aggregate: pass_rate  # Counts "success" as pass
-evalName:
-  fixed: langsmith-eval
+**Run the check:**
+```bash
+geval check --contract eval-contract.yaml --eval eval-results.csv
 ```
 
-Use it programmatically:
+That's it! Geval:
+1. Detects the `.csv` extension
+2. Uses the `sources.csv` config from your contract
+3. Aggregates metrics (avg, p95, pass_rate, etc.)
+4. Compares against your rules
+5. Returns PASS or BLOCK
+
+### CI/CD Workflow (Fully Automated)
+
+```yaml
+# .github/workflows/eval-check.yml
+name: AI Quality Gate
+
+on: [pull_request]
+
+jobs:
+  eval-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run your evals (LangSmith, Promptfoo, etc.)
+        run: npm run evals  # Outputs: eval-results.csv
+      
+      - name: Install Geval
+        run: npm install -g @geval-labs/cli
+      
+      - name: Enforce quality gate
+        run: geval check --contract eval-contract.yaml --eval eval-results.csv
+        # ✅ That's it! Contract knows how to parse the CSV
+```
+
+### Alternative: Programmatic Usage
+
+If you need more control, use the core library directly:
 
 ```typescript
 import { parseEvalSource } from "@geval-labs/core";
@@ -451,6 +519,32 @@ description: Quality requirements for my AI system
 
 # Optional: Environment (development, staging, production)
 environment: production
+
+# Optional: Source configurations for parsing CSV/JSON/JSONL files
+sources:
+  # Config for CSV files
+  csv:
+    metrics:
+      - column: accuracy          # Simple: just column name
+        aggregate: avg            # How to aggregate (see Aggregation Methods)
+      - column: latency
+        aggregate: p95
+        as: latency_p95           # Optional: rename metric
+      - column: status
+        aggregate: pass_rate
+    evalName:
+      fixed: my-eval              # Fixed name, or use column name
+    runId:
+      fixed: run-123              # Optional: run ID
+    timestamp: created_at         # Optional: column for timestamp
+  
+  # Config for JSON files (optional)
+  json:
+    metrics:
+      - column: score
+        aggregate: avg
+    json:
+      resultsPath: data.results   # Path to array in JSON
 
 # Required: At least one eval suite
 required_evals:

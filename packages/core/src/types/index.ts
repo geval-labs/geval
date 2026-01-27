@@ -106,6 +106,9 @@ export type ViolationHandler = z.infer<typeof ViolationHandlerSchema>;
 
 // =============================================================================
 // EVAL CONTRACT SCHEMA
+
+// Import for use in contract schema
+import { EvalSourceConfigSchema } from "../sources/types.js";
 // =============================================================================
 
 export const EvalContractSchema = z.object({
@@ -117,6 +120,12 @@ export const EvalContractSchema = z.object({
   description: z.string().optional(),
   /** Environment this contract applies to */
   environment: EnvironmentSchema.optional().default("production"),
+  /** Source configurations for parsing eval files */
+  sources: z.object({
+    csv: EvalSourceConfigSchema.optional(),
+    json: EvalSourceConfigSchema.optional(),
+    jsonl: EvalSourceConfigSchema.optional(),
+  }).optional(),
   /** Required eval suites */
   requiredEvals: z.array(RequiredEvalSchema).min(1),
   /** What to do on violation */

@@ -287,7 +287,47 @@ Geval automatically detects and parses results from:
 
 ### CSV Support (Any Tool!)
 
-Parse CSV files from **any** eval tool with custom column mapping:
+**New: Inline source config in contracts!** Define how to parse CSV directly in your contract:
+
+```yaml
+version: 1
+name: my-quality-gate
+
+# Tell Geval how to parse CSV files
+sources:
+  csv:
+    metrics:
+      - column: accuracy
+        aggregate: avg
+      - column: latency
+        aggregate: p95
+      - column: status
+        aggregate: pass_rate
+    evalName:
+      fixed: my-eval
+
+required_evals:
+  - name: my-eval
+    rules:
+      - metric: accuracy
+        operator: ">="
+        baseline: fixed
+        threshold: 0.85
+
+on_violation:
+  action: block
+```
+
+Then just run:
+```bash
+geval check --contract contract.yaml --eval results.csv
+```
+
+Geval automatically detects CSV and uses your inline config - **no extra files needed!**
+
+Supported aggregations: `avg`, `sum`, `min`, `max`, `p50`, `p90`, `p95`, `p99`, `pass_rate`, `fail_rate`, `count`
+
+#### Programmatic Usage
 
 ```typescript
 import { parseEvalSource } from "@geval-labs/core";
@@ -304,8 +344,6 @@ const result = parseEvalSource(csvContent, {
   evalName: { fixed: "my-eval" }
 });
 ```
-
-Supported aggregations: `avg`, `sum`, `min`, `max`, `p50`, `p90`, `p95`, `p99`, `pass_rate`, `fail_rate`, `count`
 
 ## Why Geval
 

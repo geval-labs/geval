@@ -226,7 +226,8 @@ function aggregateMetrics(
   // Extract metadata
   const metadata: Record<string, string | undefined> = {};
   if (config.metadata) {
-    for (const [key, column] of Object.entries(config.metadata)) {
+    const metadataConfig = config.metadata as Record<string, string>;
+    for (const [key, column] of Object.entries(metadataConfig)) {
       const value = rows[0]?.[column];
       metadata[key] = value !== null && value !== undefined 
         ? String(value) 
@@ -307,7 +308,8 @@ export function validateSourceColumns(
     requiredColumns.push(config.timestamp);
   }
   if (config.metadata) {
-    requiredColumns.push(...Object.values(config.metadata));
+    const metadataConfig = config.metadata as Record<string, string>;
+    requiredColumns.push(...Object.values(metadataConfig));
   }
 
   const missingColumns = requiredColumns.filter(

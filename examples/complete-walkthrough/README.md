@@ -13,13 +13,11 @@ npm install @geval-labs/core @geval-labs/cli
 ```
 complete-walkthrough/
 ├── contracts/
-│   └── quality-contract.yaml    # Eval contract defining quality requirements
+│   └── quality-contract.yaml    # Contract with inline source config
 ├── eval-results/
-│   ├── passing-run.json         # Eval results that PASS
-│   ├── failing-run.json         # Eval results that BLOCK
-│   └── langsmith-export.csv     # Example CSV from LangSmith
-├── source-configs/
-│   └── langsmith-csv.yaml       # Config for parsing LangSmith CSV
+│   ├── passing-run.json         # JSON eval results that PASS
+│   ├── failing-run.json         # JSON eval results that BLOCK
+│   └── langsmith-export.csv     # CSV from LangSmith (or any eval tool)
 ├── scripts/
 │   ├── check-json.sh            # CLI example with JSON
 │   ├── check-csv.ts             # Programmatic example with CSV
@@ -27,15 +25,33 @@ complete-walkthrough/
 └── README.md
 ```
 
-## Step 1: Understand the Contract
+## The Key Feature: Inline Source Config
 
-Look at `contracts/quality-contract.yaml`:
+The contract now includes a `sources` section that tells Geval how to parse CSV files directly:
 
 ```yaml
 version: 1
 name: ai-quality-gate
-description: Quality requirements for AI deployment
 
+# ═══════════════════════════════════════════════════
+# SOURCES: How to parse CSV/JSON files
+# ═══════════════════════════════════════════════════
+sources:
+  csv:
+    metrics:
+      - column: accuracy
+        aggregate: avg
+      - column: latency
+        aggregate: p95
+        as: latency_p95
+      - column: hallucination_rate
+        aggregate: avg
+    evalName:
+      fixed: quality-metrics
+
+# ═══════════════════════════════════════════════════
+# RULES: What must pass
+# ═══════════════════════════════════════════════════
 required_evals:
   - name: quality-metrics
     rules:
@@ -43,26 +59,19 @@ required_evals:
         operator: ">="
         baseline: fixed
         threshold: 0.85
-      - metric: latency_p95
-        operator: "<="
-        baseline: fixed
-        threshold: 500
-      - metric: hallucination_rate
-        operator: "<="
-        baseline: fixed
-        threshold: 0.05
+      # ... more rules
 
 on_violation:
   action: block
 ```
 
-## Step 2: Run with Passing Eval Results
+## Step 1: Run with JSON Results
 
 ```bash
 # Validate the contract
 npx geval validate contracts/quality-contract.yaml
 
-# Check passing results
+# Check passing JSON results
 npx geval check \
   --contract contracts/quality-contract.yaml \
   --eval eval-results/passing-run.json
@@ -78,7 +87,23 @@ Version:     1
 All 1 eval(s) passed contract requirements
 ```
 
-## Step 3: Run with Failing Eval Results
+## Step 2: Run with CSV Results (Zero Extra Config!)
+
+**This is the magic - CSV just works!**
+
+```bash
+npx geval check \
+  --contract contracts/quality-contract.yaml \
+  --eval eval-results/langsmith-export.csv
+```
+
+Geval automatically:
+1. Detects the `.csv` extension
+2. Uses the `sources.csv` config from the contract
+3. Aggregates metrics using the specified methods
+4. Evaluates against the rules
+
+## Step 3: See Failing Results
 
 ```bash
 npx geval check \
@@ -104,24 +129,42 @@ Violations
      hallucination_rate = 0.08, expected <= 0.05
 ```
 
-## Step 4: Work with CSV (LangSmith, etc.)
-
-```bash
-npx ts-node scripts/check-csv.ts
-```
-
-This demonstrates:
-1. Parsing a CSV file with custom column mapping
-2. Aggregating metrics (avg, p95, pass_rate)
-3. Running evaluation against a contract
-
-## Step 5: Compare Runs
+## Step 4: Compare Runs
 
 ```bash
 npx geval diff \
   --previous eval-results/passing-run.json \
   --current eval-results/failing-run.json
 ```
+
+## CI/CD Integration
+
+The simplest CI workflow:
+
+```yaml
+# .github/workflows/eval-check.yml
+name: AI Quality Gate
+
+on: [pull_request]
+
+jobs:
+  eval-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run your evals
+        run: npm run evals  # Outputs CSV or JSON
+      
+      - name: Enforce quality gate
+        run: |
+          npm install -g @geval-labs/cli
+          geval check \
+            --contract contracts/quality-contract.yaml \
+            --eval eval-results.csv
+```
+
+**That's it!** The contract has everything Geval needs - no extra config files.
 
 ## Running All Examples
 
@@ -136,3 +179,21 @@ npm install
 npx ts-node scripts/check-csv.ts
 npx ts-node scripts/ci-integration.ts
 ```
+
+## Aggregation Methods Available
+
+| Method | Description |
+|--------|-------------|
+| `avg` | Average of all values (default) |
+| `sum` | Sum of all values |
+| `min` | Minimum value |
+| `max` | Maximum value |
+| `count` | Count of non-null values |
+| `p50` | 50th percentile (median) |
+| `p90` | 90th percentile |
+| `p95` | 95th percentile |
+| `p99` | 99th percentile |
+| `pass_rate` | % of "success"/"pass"/true/1 values |
+| `fail_rate` | % of "error"/"fail"/false/0 values |
+| `first` | First value |
+| `last` | Last value |

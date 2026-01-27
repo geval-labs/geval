@@ -6,6 +6,42 @@ name: ai-quality-gate
 description: Quality requirements for production AI deployment
 environment: production
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# SOURCES: How to parse different eval result formats
+# These configs tell Geval how to extract metrics from CSV/JSON files
+# ═══════════════════════════════════════════════════════════════════════════════
+sources:
+  # Config for CSV files (e.g., LangSmith exports)
+  csv:
+    metrics:
+      - column: accuracy
+        aggregate: avg
+      - column: latency
+        aggregate: p95
+        as: latency_p95           # Rename to match rule metric name
+      - column: hallucination_detected
+        aggregate: fail_rate      # Convert boolean to rate
+        as: hallucination_rate    # Rename to match rule metric name
+      - column: status
+        aggregate: pass_rate
+    evalName:
+      fixed: quality-metrics      # Must match required_evals name
+
+  # Config for JSON files (optional - also works with JSON)
+  json:
+    metrics:
+      - column: accuracy
+        aggregate: avg
+      - column: latency_p95
+        aggregate: first
+      - column: hallucination_rate
+        aggregate: avg
+    evalName:
+      fixed: quality-metrics
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RULES: What must pass before shipping
+# ═══════════════════════════════════════════════════════════════════════════════
 required_evals:
   - name: quality-metrics
     description: Core quality metrics that must be met

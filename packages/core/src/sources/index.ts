@@ -21,5 +21,8 @@ export { parseCsv, isCsv, type CsvParserOptions } from "./csv-parser.js";
 // Aggregator
 export { aggregate, extractColumnValues } from "./aggregator.js";
 
-// Main source parser
+// Main source parser (standalone usage)
 export { parseEvalSource, validateSourceColumns } from "./source-parser.js";
+
+// File parser (uses contract source config)
+export { parseEvalFile, detectFileType } from "./file-parser.js";
