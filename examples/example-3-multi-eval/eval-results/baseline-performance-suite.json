@@ -1,0 +1,12 @@
+{
+  "evalName": "performance-suite",
+  "runId": "perf-run-2025-01-14",
+  "timestamp": "2025-01-14T10:05:00Z",
+  "metrics": {
+    "latency_p95": 200
+  },
+  "metadata": {
+    "test_count": 5000,
+    "load_level": "high"
+  }
+}

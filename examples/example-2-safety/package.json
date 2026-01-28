@@ -1,0 +1,18 @@
+{
+  "name": "geval-example-2-safety",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Geval Example 2: Safety and Compliance Monitoring",
+  "type": "module",
+  "scripts": {
+    "run": "npx tsx run-example.ts"
+  },
+  "dependencies": {
+    "@geval-labs/core": "^0.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

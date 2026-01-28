@@ -1,0 +1,83 @@
+# Performance Monitoring Contract
+# Enforces performance requirements for API endpoints
+
+version: 1
+name: performance-gate
+description: Performance requirements for production API deployment
+environment: production
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SOURCES: How to parse eval results
+# ═══════════════════════════════════════════════════════════════════════════════
+sources:
+  csv:
+    metrics:
+      - column: latency_ms
+        aggregate: p95
+        as: latency_p95
+      - column: latency_ms
+        aggregate: p99
+        as: latency_p99
+      - column: requests_per_second
+        aggregate: avg
+        as: throughput
+      - column: error_rate
+        aggregate: avg
+      - column: status
+        aggregate: pass_rate
+        as: success_rate
+    evalName:
+      fixed: performance-metrics
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RULES: Performance requirements
+# ═══════════════════════════════════════════════════════════════════════════════
+required_evals:
+  - name: performance-metrics
+    description: Core performance metrics that must be met
+    rules:
+      # P95 latency must be under 200ms
+      - metric: latency_p95
+        operator: "<="
+        baseline: fixed
+        threshold: 200
+        description: 95th percentile latency must be under 200ms
+
+      # P99 latency must be under 500ms
+      - metric: latency_p99
+        operator: "<="
+        baseline: fixed
+        threshold: 500
+        description: 99th percentile latency must be under 500ms
+
+      # Throughput must be at least 1000 req/s
+      - metric: throughput
+        operator: ">="
+        baseline: fixed
+        threshold: 1000
+        description: Throughput must meet minimum requirement
+
+      # Error rate must be under 0.1%
+      - metric: error_rate
+        operator: "<="
+        baseline: fixed
+        threshold: 0.001
+        description: Error rate must be minimal
+
+      # Success rate must be at least 99.9%
+      - metric: success_rate
+        operator: ">="
+        baseline: fixed
+        threshold: 0.999
+        description: Success rate must be high
+
+      # Latency cannot regress by more than 10ms from previous run
+      - metric: latency_p95
+        operator: "<="
+        baseline: previous
+        max_delta: 10
+        description: Latency cannot regress significantly
+
+on_violation:
+  action: block
+  message: "Performance metrics did not meet production requirements. Deployment blocked."

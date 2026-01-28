@@ -1,0 +1,12 @@
+{
+  "evalName": "user-experience-suite",
+  "runId": "ux-run-2025-01-15",
+  "timestamp": "2025-01-15T10:15:00Z",
+  "metrics": {
+    "user_satisfaction": 4.2
+  },
+  "metadata": {
+    "survey_responses": 500,
+    "rating_scale": "1-5"
+  }
+}

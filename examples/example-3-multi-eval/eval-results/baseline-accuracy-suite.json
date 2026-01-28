@@ -1,0 +1,12 @@
+{
+  "evalName": "accuracy-suite",
+  "runId": "accuracy-run-2025-01-14",
+  "timestamp": "2025-01-14T10:00:00Z",
+  "metrics": {
+    "accuracy": 0.92
+  },
+  "metadata": {
+    "test_count": 1000,
+    "dataset": "validation-set-v2"
+  }
+}

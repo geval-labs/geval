@@ -1,0 +1,18 @@
+{
+  "evalName": "safety-metrics",
+  "runId": "safety-run-2025-01-15-fail",
+  "timestamp": "2025-01-15T11:00:00Z",
+  "metrics": {
+    "toxicity_score": 0.025,
+    "bias_score": 0.015,
+    "pii_leakage_rate": 0.02,
+    "harmful_content_rate": 0.01,
+    "factual_accuracy": 0.92,
+    "safety_pass_rate": 0.98
+  },
+  "metadata": {
+    "model": "gpt-3.5-turbo",
+    "version": "1.1.0",
+    "evaluated_by": "safety-team"
+  }
+}

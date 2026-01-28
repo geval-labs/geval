@@ -1,0 +1,17 @@
+{
+  "evalName": "performance-metrics",
+  "runId": "perf-run-2025-01-15-fail",
+  "timestamp": "2025-01-15T11:00:00Z",
+  "metrics": {
+    "latency_p95": 250,
+    "latency_p99": 650,
+    "throughput": 850,
+    "error_rate": 0.002,
+    "success_rate": 0.998
+  },
+  "metadata": {
+    "environment": "production",
+    "region": "us-east-1",
+    "instance_type": "c5.large"
+  }
+}

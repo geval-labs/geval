@@ -1,0 +1,101 @@
+# Multi-Eval Comparison Contract
+# Enforces requirements across multiple evaluation suites
+
+version: 1
+name: multi-eval-gate
+description: Comprehensive evaluation across multiple test suites
+environment: production
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SOURCES: How to parse eval results
+# ═══════════════════════════════════════════════════════════════════════════════
+sources:
+  csv:
+    metrics:
+      - column: accuracy
+        aggregate: avg
+      - column: latency_ms
+        aggregate: p95
+        as: latency_p95
+      - column: cost_per_request
+        aggregate: avg
+        as: cost
+      - column: user_satisfaction
+        aggregate: avg
+    evalName: eval_suite
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RULES: Requirements for multiple eval suites
+# ═══════════════════════════════════════════════════════════════════════════════
+required_evals:
+  - name: accuracy-suite
+    description: Accuracy evaluation suite
+    rules:
+      # Accuracy must be at least 90%
+      - metric: accuracy
+        operator: ">="
+        baseline: fixed
+        threshold: 0.90
+        description: Accuracy must meet minimum threshold
+
+      # Accuracy cannot drop by more than 2% from previous run
+      - metric: accuracy
+        operator: ">="
+        baseline: previous
+        max_delta: -0.02
+        description: Accuracy cannot regress significantly
+
+  - name: performance-suite
+    description: Performance evaluation suite
+    rules:
+      # Latency must be under 300ms
+      - metric: latency_p95
+        operator: "<="
+        baseline: fixed
+        threshold: 300
+        description: P95 latency must be acceptable
+
+      # Latency cannot increase by more than 50ms
+      - metric: latency_p95
+        operator: "<="
+        baseline: previous
+        max_delta: 50
+        description: Latency cannot regress significantly
+
+  - name: cost-suite
+    description: Cost efficiency evaluation suite
+    rules:
+      # Cost per request must be under $0.01
+      - metric: cost
+        operator: "<="
+        baseline: fixed
+        threshold: 0.01
+        description: Cost must be within budget
+
+      # Cost cannot increase by more than 10% from previous run
+      - metric: cost
+        operator: "<="
+        baseline: previous
+        max_delta: 0.001
+        description: Cost cannot increase significantly
+
+  - name: user-experience-suite
+    description: User experience evaluation suite
+    rules:
+      # User satisfaction must be at least 4.0/5.0
+      - metric: user_satisfaction
+        operator: ">="
+        baseline: fixed
+        threshold: 4.0
+        description: User satisfaction must be high
+
+      # User satisfaction cannot drop from previous run
+      - metric: user_satisfaction
+        operator: ">="
+        baseline: previous
+        max_delta: 0.0
+        description: User satisfaction cannot decrease
+
+on_violation:
+  action: block
+  message: "One or more evaluation suites failed. Review violations before deploying."

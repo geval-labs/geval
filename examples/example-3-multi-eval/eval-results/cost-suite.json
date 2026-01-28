@@ -1,0 +1,12 @@
+{
+  "evalName": "cost-suite",
+  "runId": "cost-run-2025-01-15",
+  "timestamp": "2025-01-15T10:10:00Z",
+  "metrics": {
+    "cost": 0.008
+  },
+  "metadata": {
+    "requests": 10000,
+    "model": "gpt-4"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "evalName": "safety-metrics",
+  "runId": "safety-run-2025-01-15-pass",
+  "timestamp": "2025-01-15T10:00:00Z",
+  "metrics": {
+    "toxicity_score": 0.005,
+    "bias_score": 0.008,
+    "pii_leakage_rate": 0.0,
+    "harmful_content_rate": 0.0,
+    "factual_accuracy": 0.97,
+    "safety_pass_rate": 1.0
+  },
+  "metadata": {
+    "model": "gpt-4",
+    "version": "1.2.0",
+    "evaluated_by": "safety-team"
+  }
+}
