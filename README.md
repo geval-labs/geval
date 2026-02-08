@@ -5,7 +5,7 @@
 <h1 align="center">Geval</h1>
 
 <p align="center">
-  <strong>Eval-driven release gates for AI applications</strong>
+  <strong>Eval-driven release decisions for AI systems</strong>
 </p>
 
 <p align="center">
@@ -28,22 +28,75 @@
 
 ## What is Geval?
 
-Geval turns evaluation results into **automated pass/fail decisions** in CI/CD pipelines. It's a lightweight, framework-agnostic tool that enforces quality contracts on your AI applications.
+**Geval is a core library for eval-driven release decisions in AI systems.**
 
-**Geval is:**
-- ✅ **Format-agnostic** - Works with CSV, JSON, JSONL from any eval tool
-- ✅ **Contract-based** - Define quality requirements as code
-- ✅ **CI-native** - Exit codes and JSON output for automation
-- ✅ **Framework-agnostic** - Works with Promptfoo, LangSmith, OpenEvals, or custom tools
+Modern AI teams run evals, inspect traces, and review results — but release decisions are still implicit, manual, and fragmented across CI scripts, Slack threads, and human judgment.
 
-**Geval is not:**
-- ❌ An eval runner (it consumes eval outputs)
-- ❌ A monitoring tool (it's for release gates)
-- ❌ A testing framework (it validates existing results)
+Geval exists to make those decisions **explicit, reviewable, and enforceable**.
+
+It consumes evaluation results and other decision signals you already trust, applies **decision contracts**, and produces a deterministic outcome:
+
+- ✅ allowed to ship  
+- ⚠️ allowed only with explicit human approval  
+- ❌ blocked from release  
+
+CI/CD is where enforcement happens — but the real value of Geval is creating a **single, auditable decision layer** between evals and production.
 
 ```text
-Your Evals → Geval Contract → CI Pass/Block Decision
+Eval Signals + Human Context → Geval Contract → Release Decision Record
 ```
+
+## Why Geval exists
+
+Teams adopt Geval when:
+- evals are directional, not absolute
+- humans are always in the loop
+- "half-baked" AI changes keep slipping through
+- retros keep asking *"why did we ship this?"*
+- custom CI scripts start to rot
+
+Geval does not try to improve eval quality.
+
+It removes **decision ambiguity**.
+
+## Who Geval is for
+
+Geval is designed for:
+- AI platform and infra engineers
+- Teams with real production blast radius
+- Systems where AI behavior affects users, safety, or revenue
+- Teams tired of informal release decisions
+
+## Who Geval is not for
+
+Geval is not a fit for:
+- exploration-only or research workflows
+- teams happy with "we'll monitor it"
+- users looking for dashboards or insights
+- anyone expecting fully automated truth from evals
+
+**Geval is:**
+- ✅ **Eval-agnostic** – Consumes outputs from Promptfoo, LangSmith exports, OpenEvals, or custom tooling
+- ✅ **Signal-driven** – Works with eval metrics, human review decisions, risk flags, and external references
+- ✅ **Contract-based** – Encodes release intent and tolerance explicitly as code
+- ✅ **Decision-centric** – Produces PASS / REQUIRE_APPROVAL / BLOCK outcomes with clear reasons
+- ✅ **CI-native (but not CI-limited)** – Designed for CI enforcement, applicable anywhere release decisions are made
+- ✅ **Open-source core** – All decision logic and contracts are inspectable and deterministic
+
+**Geval is not:**
+- ❌ An eval runner – it never executes evals or workflows
+- ❌ An observability or tracing tool – it does not replace Phoenix or LangSmith
+- ❌ A monitoring system – it does not watch production traffic
+- ❌ A testing framework – it validates existing results, not tests
+- ❌ A quality oracle – it does not define correctness or universal benchmarks
+
+Those tools answer:
+
+> *"What happened?"*
+
+Geval answers:
+
+> **"Given what we knew at the time, was this allowed to ship?"**
 
 ---
 
