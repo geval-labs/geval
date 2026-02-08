@@ -109,6 +109,8 @@ export type ViolationHandler = z.infer<typeof ViolationHandlerSchema>;
 
 // Import for use in contract schema
 import { EvalSourceConfigSchema } from "../sources/types.js";
+// Lazy import to avoid circular dependency
+// PolicySchema will be imported when needed
 // =============================================================================
 
 export const EvalContractSchema = z.object({
@@ -126,13 +128,20 @@ export const EvalContractSchema = z.object({
     json: EvalSourceConfigSchema.optional(),
     jsonl: EvalSourceConfigSchema.optional(),
   }).optional(),
-  /** Required eval suites */
-  requiredEvals: z.array(RequiredEvalSchema).min(1),
-  /** What to do on violation */
-  onViolation: ViolationHandlerSchema,
+  /** Required eval suites (legacy - for backward compatibility) */
+  requiredEvals: z.array(RequiredEvalSchema).optional(),
+  /** Policy-based rules (new - supports signals and eval metrics) */
+  policy: z.any().optional(), // Will be validated separately to avoid circular deps
+  /** What to do on violation (legacy - used if policy not specified) */
+  onViolation: ViolationHandlerSchema.optional(),
   /** Contract metadata */
   metadata: z.record(z.string()).optional(),
-});
+}).refine(
+  (data) => data.requiredEvals !== undefined || data.policy !== undefined,
+  {
+    message: "Contract must have either 'requiredEvals' or 'policy'",
+  }
+);
 export type EvalContract = z.infer<typeof EvalContractSchema>;
 
 // =============================================================================
@@ -245,6 +254,10 @@ export interface EngineInput {
   evalResults: NormalizedEvalResult[];
   /** Baseline data (keyed by eval name) */
   baselines: Record<string, BaselineData>;
+  /** Signals for policy-based evaluation */
+  signals?: import("../signals/types.js").Signal[];
+  /** Environment for evaluation */
+  environment?: string;
 }
 
 // =============================================================================

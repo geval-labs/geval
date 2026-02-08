@@ -1,0 +1,12 @@
+{
+  "signals": [
+    {
+      "id": "risk-1",
+      "type": "risk_flag",
+      "name": "security-risk",
+      "value": {
+        "level": "low"
+      }
+    }
+  ]
+}

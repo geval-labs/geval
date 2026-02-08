@@ -1,7 +1,7 @@
 {
   "name": "@geval-labs/core",
-  "version": "0.0.5",
-  "description": "Core library for Geval - eval-driven release enforcement",
+  "version": "0.0.6",
+  "description": "Core library for Geval - Turns evaluation signals into explicit, enforceable release decisions",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

@@ -56,7 +56,7 @@ export function validateContract(contract: EvalContract): ValidationResult {
 
   // Check for duplicate eval names
   const evalNames = new Set<string>();
-  for (const reqEval of contract.requiredEvals) {
+  for (const reqEval of contract.requiredEvals ?? []) {
     if (evalNames.has(reqEval.name)) {
       errors.push({
         path: `requiredEvals.${reqEval.name}`,

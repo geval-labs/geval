@@ -52,17 +52,17 @@ export function diffContracts(
   }
 
   // Compare violation handler
-  if (previous.onViolation.action !== current.onViolation.action) {
+  if (previous.onViolation?.action !== current.onViolation?.action) {
     diffs.push({
       field: "onViolation.action",
-      previous: previous.onViolation.action,
-      current: current.onViolation.action,
+      previous: previous.onViolation?.action,
+      current: current.onViolation?.action,
     });
   }
 
   // Compare required evals
-  const prevEvalNames = new Set(previous.requiredEvals.map((e) => e.name));
-  const currEvalNames = new Set(current.requiredEvals.map((e) => e.name));
+  const prevEvalNames = new Set(previous.requiredEvals?.map((e) => e.name) ?? []);
+  const currEvalNames = new Set(current.requiredEvals?.map((e) => e.name) ?? []);
 
   // Find added evals
   for (const name of currEvalNames) {
@@ -87,8 +87,8 @@ export function diffContracts(
   }
 
   // Compare common evals
-  for (const currEval of current.requiredEvals) {
-    const prevEval = previous.requiredEvals.find((e) => e.name === currEval.name);
+  for (const currEval of current.requiredEvals ?? []) {
+    const prevEval = previous.requiredEvals?.find((e) => e.name === currEval.name);
     if (!prevEval) continue;
 
     // Compare rules

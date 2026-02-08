@@ -199,11 +199,21 @@ Built-in adapters for popular eval tools:
 - **OpenEvals** - JSON format support
 - **Generic** - Custom JSON formats
 
+### 🎛️ Signal-Based Policies (New)
+
+Geval now supports policy-based contracts that can evaluate signals beyond just eval metrics:
+
+- **Signal types**: `eval`, `human_review`, `risk_flag`, `external_reference`
+- **Signal conditions**: Match signals by type, name, or value
+- **Environment-specific rules**: Different policies for dev/staging/prod
+- **Human decisions**: Record approvals/rejections as signals
+
 ### 🚀 CI/CD Integration
 
 - **Exit codes**: `0` PASS · `1` BLOCK · `2` REQUIRES_APPROVAL · `3` ERROR
 - **JSON output**: `--json` flag for programmatic use
 - **Multiple files**: Support for multiple eval result files
+- **Decision records**: Automatic generation of decision artifacts with hashes
 
 ---
 
@@ -298,11 +308,49 @@ geval validate <path> [options]
 geval validate contract.yaml --strict
 ```
 
+### `geval approve`
+
+Record a human approval decision. Creates an approval artifact that can be used as a signal.
+
+```bash
+geval approve --reason <reason> [options]
+```
+
+**Options:**
+- `-r, --reason <reason>` - Reason for approval *(required)*
+- `-o, --output <path>` - Output file path (default: `geval-approval.json`)
+- `--by <name>` - Name of approver (defaults to `$USER`)
+
+**Example:**
+```bash
+geval approve --reason "Reviewed with product team" --by "alice"
+```
+
+### `geval reject`
+
+Record a human rejection decision. Creates a rejection artifact.
+
+```bash
+geval reject --reason <reason> [options]
+```
+
+**Options:**
+- `-r, --reason <reason>` - Reason for rejection *(required)*
+- `-o, --output <path>` - Output file path (default: `geval-rejection.json`)
+- `--by <name>` - Name of reviewer (defaults to `$USER`)
+
+**Example:**
+```bash
+geval reject --reason "Customer risk too high" --by "bob"
+```
+
 ---
 
 ## Contract Reference
 
-### Basic Structure
+Geval supports two contract formats:
+
+### Legacy Format (Eval-Based)
 
 ```yaml
 version: 1                    # Contract schema version (required)
@@ -333,6 +381,57 @@ on_violation:                # Required: violation handler
 
 metadata:                    # Optional: contract metadata
   key: value                 # All values must be strings
+```
+
+### Policy Format (Signal-Based) - New
+
+```yaml
+version: 1
+name: policy-contract
+environment: production
+
+policy:
+  # Environment-specific policies
+  environments:
+    development:
+      default: pass          # Default action when no rules match
+    
+    production:
+      default: require_approval
+      rules:
+        # Eval-based rule
+        - when:
+            eval:
+              metric: accuracy
+              operator: ">="
+              baseline: fixed
+              threshold: 0.90
+          then:
+            action: pass
+            reason: "Accuracy meets threshold"
+        
+        # Signal-based rule
+        - when:
+            signal:
+              type: risk_flag
+              field: level
+              operator: "=="
+              value: "high"
+          then:
+            action: block
+            reason: "High risk detected"
+  
+  # Global rules (applied to all environments)
+  rules:
+    - when:
+        signal:
+          type: human_review
+          field: decision
+          operator: "=="
+          value: "rejected"
+      then:
+        action: block
+        reason: "Human review rejected"
 ```
 
 ### Aggregation Methods
@@ -406,6 +505,41 @@ sources:
 ```
 
 Note: JSON files in normalized format (with `evalName`, `runId`, `metrics` at top level) are auto-detected and don't require source config.
+
+### Signals
+
+Signals are generic inputs to the decision engine beyond eval metrics:
+
+```json
+{
+  "signals": [
+    {
+      "id": "signal-1",
+      "type": "risk_flag",
+      "name": "security-risk",
+      "value": { "level": "high" },
+      "metadata": { "source": "security-scan" }
+    },
+    {
+      "id": "signal-2",
+      "type": "human_review",
+      "name": "approval",
+      "value": { "decision": "approved", "by": "alice" }
+    }
+  ]
+}
+```
+
+**Signal Types:**
+- `eval` - References eval result artifacts
+- `human_review` - Human approval/rejection decisions
+- `risk_flag` - Risk level indicators (low/medium/high)
+- `external_reference` - External URLs or references
+
+**Using Signals:**
+```bash
+geval check --contract contract.yaml --eval results.csv --signals signals.json
+```
 
 ---
 
@@ -524,6 +658,46 @@ const decision = evaluate({
 });
 ```
 
+### With Signals and Policy
+
+```typescript
+import {
+  parseContractFromYaml,
+  parseEvalFile,
+  parseSignals,
+  evaluate,
+  createDecisionRecord,
+} from "@geval-labs/core";
+
+// Parse contract with policy
+const contract = parseContractFromYaml(contractYaml);
+
+// Parse eval results
+const evalResult = parseEvalFile(csvContent, "results.csv", contract);
+
+// Parse signals
+const signalsData = JSON.parse(fs.readFileSync("signals.json", "utf-8"));
+const { signals } = parseSignals(signalsData);
+
+// Evaluate with signals
+const decision = evaluate({
+  contract,
+  evalResults: [evalResult],
+  baselines: {},
+  signals,
+  environment: "production",
+});
+
+// Create decision record
+const record = createDecisionRecord({
+  decision,
+  environment: "production",
+  contract,
+  evalResults: [evalResult],
+  signals,
+});
+```
+
 ### Available Exports
 
 **Core Functions:**
@@ -551,6 +725,11 @@ const decision = evaluate({
 - `Violation` - Rule violation
 - `NormalizedEvalResult` - Normalized eval result
 - `BaselineData` - Baseline data structure
+- `Signal` - Signal type
+- `SignalCollection` - Collection of signals
+- `HumanDecision` - Human approval/rejection decision
+- `DecisionRecord` - Decision record with hashes
+- `Policy` - Policy-based contract structure
 
 ---
 

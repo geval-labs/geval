@@ -1,7 +1,7 @@
 {
   "name": "@geval-labs/cli",
-  "version": "0.0.5",
-  "description": "CLI for Geval - eval-driven release enforcement",
+  "version": "0.0.6",
+  "description": "CLI for Geval - Turns evaluation signals into explicit, enforceable release decisions",
   "bin": {
     "geval": "./dist/cli.js"
   },
@@ -39,7 +39,7 @@
   "homepage": "https://geval.io",
   "license": "MIT",
   "dependencies": {
-    "@geval-labs/core": "^0.0.5",
+    "@geval-labs/core": "^0.0.6",
     "commander": "^11.1.0",
     "picocolors": "^1.0.0"
   },

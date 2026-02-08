@@ -1,0 +1,37 @@
+version: 1
+name: e2e-test-contract
+environment: production
+
+policy:
+  environments:
+    production:
+      rules:
+        - when:
+            eval:
+              metric: accuracy
+              operator: ">="
+              baseline: fixed
+              threshold: 0.90
+          then:
+            action: pass
+            reason: "Accuracy meets threshold"
+        
+        - when:
+            signal:
+              type: risk_flag
+              field: level
+              operator: "=="
+              value: "high"
+          then:
+            action: block
+            reason: "High risk detected"
+      
+      default: require_approval
+
+sources:
+  csv:
+    metrics:
+      - column: accuracy
+        aggregate: avg
+    evalName:
+      fixed: quality-metrics

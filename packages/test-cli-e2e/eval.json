@@ -1,0 +1,7 @@
+{
+  "evalName": "quality-metrics",
+  "runId": "test-run-1",
+  "metrics": {
+    "accuracy": 0.92
+  }
+}

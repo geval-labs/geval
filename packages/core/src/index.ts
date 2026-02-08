@@ -57,9 +57,11 @@ export {
 // Engine functions
 export {
   evaluate,
+  evaluatePolicy,
   formatDecision,
   formatViolation,
   diffEvalResults,
+  compareValues,
 } from "./engine/index.js";
 
 // Adapter functions
@@ -98,6 +100,17 @@ export { parseEvalSource, validateSourceColumns } from "./sources/source-parser.
 
 // File parser (uses contract source config)
 export { parseEvalFile, detectFileType } from "./sources/file-parser.js";
+
+// Signals module
+export * from "./signals/index.js";
+
+// Decisions module
+export * from "./decisions/index.js";
+export type { HumanDecision } from "./decisions/types.js";
+export { HumanDecisionSchema } from "./decisions/types.js";
+
+// Policy module
+export * from "./contracts/policy.js";
 
 // Version
 export const VERSION = "0.0.1";

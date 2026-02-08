@@ -2,8 +2,11 @@ import { Command } from "commander";
 import { VERSION } from "@geval-labs/core";
 import { checkCommand } from "./commands/check.js";
 import { diffCommand } from "./commands/diff.js";
+import { contractDiffCommand } from "./commands/contract-diff.js";
 import { explainCommand } from "./commands/explain.js";
 import { validateCommand } from "./commands/validate.js";
+import { approveCommand } from "./commands/approve.js";
+import { rejectCommand } from "./commands/reject.js";
 
 const program = new Command();
 
@@ -20,8 +23,10 @@ program
   .command("check")
   .description("Evaluate contracts against eval results and enforce decisions")
   .requiredOption("-c, --contract <path>", "Path to eval contract (YAML/JSON)")
-  .requiredOption("-e, --eval <paths...>", "Path(s) to eval result files (JSON)")
+  .requiredOption("-e, --eval <paths...>", "Path(s) to eval result files (CSV/JSON/JSONL)")
   .option("-b, --baseline <path>", "Path to baseline eval results (JSON)")
+  .option("--signals <path>", "Path to signals file (JSON)")
+  .option("--env <env>", "Environment (development|staging|production)")
   .option("--adapter <name>", "Force specific adapter (promptfoo, langsmith, openevals, generic)")
   .option("--json", "Output results as JSON")
   .option("--no-color", "Disable colored output")
@@ -38,13 +43,26 @@ program
   .option("--no-color", "Disable colored output")
   .action(diffCommand);
 
+// geval contract-diff - compare contracts
+program
+  .command("contract-diff")
+  .description("Compare two contract files and show differences")
+  .requiredOption("-p, --previous <path>", "Path to previous contract (YAML/JSON)")
+  .requiredOption("-c, --current <path>", "Path to current contract (YAML/JSON)")
+  .option("--json", "Output results as JSON")
+  .option("--no-color", "Disable colored output")
+  .action(contractDiffCommand);
+
 // geval explain - explain a decision
 program
   .command("explain")
   .description("Explain why a contract passed or failed")
   .requiredOption("-c, --contract <path>", "Path to eval contract (YAML/JSON)")
-  .requiredOption("-e, --eval <paths...>", "Path(s) to eval result files (JSON)")
+  .requiredOption("-e, --eval <paths...>", "Path(s) to eval result files (CSV/JSON/JSONL)")
   .option("-b, --baseline <path>", "Path to baseline eval results (JSON)")
+  .option("--signals <path>", "Path to signals file (JSON)")
+  .option("--env <env>", "Environment (development|staging|production)")
+  .option("--adapter <name>", "Force specific adapter (promptfoo, langsmith, openevals, generic)")
   .option("--verbose", "Show detailed explanations")
   .option("--no-color", "Disable colored output")
   .action(explainCommand);
@@ -57,6 +75,24 @@ program
   .option("--strict", "Enable strict validation (warnings become errors)")
   .option("--json", "Output results as JSON")
   .action(validateCommand);
+
+// geval approve - record human approval
+program
+  .command("approve")
+  .description("Record a human approval decision")
+  .requiredOption("-r, --reason <reason>", "Reason for approval")
+  .option("-o, --output <path>", "Output file path", "geval-approval.json")
+  .option("--by <name>", "Name of approver (defaults to $USER)")
+  .action(approveCommand);
+
+// geval reject - record human rejection
+program
+  .command("reject")
+  .description("Record a human rejection decision")
+  .requiredOption("-r, --reason <reason>", "Reason for rejection")
+  .option("-o, --output <path>", "Output file path", "geval-rejection.json")
+  .option("--by <name>", "Name of reviewer (defaults to $USER)")
+  .action(rejectCommand);
 
 // Parse arguments
 program.parse();

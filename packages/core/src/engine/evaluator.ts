@@ -7,6 +7,7 @@ import type {
   MetricValue,
   EngineInput,
 } from "../types/index.js";
+import { evaluatePolicy } from "./policy-evaluator.js";
 
 /**
  * Evaluate an eval contract against eval results and baselines.
@@ -20,7 +21,23 @@ import type {
  * @returns A Decision object (PASS, BLOCK, or REQUIRES_APPROVAL)
  */
 export function evaluate(input: EngineInput): Decision {
-  const { contract, evalResults, baselines } = input;
+  const { contract, evalResults, baselines, signals, environment } = input;
+  
+  // If contract has policy, use policy evaluator
+  if (contract.policy) {
+    return evaluatePolicy({
+      contract,
+      evalResults,
+      signals: signals || [],
+      environment: environment || contract.environment || "production",
+    });
+  }
+  
+  // Legacy eval-based contract
+  if (!contract.requiredEvals || contract.requiredEvals.length === 0) {
+    throw new Error("Contract must have either 'requiredEvals' or 'policy'");
+  }
+  
   const violations: Violation[] = [];
   const timestamp = new Date().toISOString();
 
@@ -79,7 +96,7 @@ export function evaluate(input: EngineInput): Decision {
   }
 
   // Map violation action to decision status
-  const status = mapViolationAction(contract.onViolation.action);
+  const status = mapViolationAction(contract.onViolation?.action ?? "warn");
 
   return {
     status,
@@ -87,7 +104,7 @@ export function evaluate(input: EngineInput): Decision {
     contractName: contract.name,
     contractVersion: contract.version,
     violations,
-    summary: buildViolationSummary(violations, contract.onViolation.action),
+    summary: buildViolationSummary(violations, contract.onViolation?.action ?? "warn"),
   };
 }
 
@@ -217,7 +234,7 @@ function getBaselineValue(
 /**
  * Compare two values using the given operator
  */
-function compareValues(
+export function compareValues(
   actual: MetricValue,
   operator: string,
   expected: MetricValue

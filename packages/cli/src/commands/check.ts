@@ -10,10 +10,14 @@ import {
   parseEvalFile,
   detectFileType,
   formatDecision,
+  parseSignals,
+  createDecisionRecord,
+  formatDecisionRecord,
   type Decision,
   type NormalizedEvalResult,
   type BaselineData,
   type EvalContract,
+  type Signal,
   parseWithAdapter,
 } from "@geval-labs/core";
 
@@ -21,7 +25,9 @@ interface CheckOptions {
   contract: string;
   eval: string[];
   baseline?: string;
+  signals?: string;
   adapter?: string;
+  env?: string;
   json?: boolean;
   color?: boolean;
   verbose?: boolean;
@@ -55,11 +61,39 @@ export async function checkCommand(options: CheckOptions): Promise<void> {
       ? loadBaselines(options.baseline, evalResults, contract)
       : {};
 
+    // Load signals if provided
+    let signals: Signal[] = [];
+    if (options.signals) {
+      const signalsContent = fs.readFileSync(options.signals, "utf-8");
+      const signalsData = JSON.parse(signalsContent);
+      const signalCollection = parseSignals(signalsData);
+      signals = signalCollection.signals;
+    }
+
+    // Determine environment
+    const environment = options.env || contract.environment || "production";
+
     // Run evaluation
     const decision = evaluate({
       contract,
       evalResults,
       baselines,
+      signals,
+      environment,
+    });
+
+    // Create decision record
+    const decisionRecord = createDecisionRecord({
+      decision,
+      environment,
+      commit: process.env.GITHUB_SHA || process.env.CI_COMMIT_SHA,
+      evalResults,
+      signals,
+      contract,
+      evidence: options.eval.concat(
+        options.baseline ? [options.baseline] : [],
+        options.signals ? [options.signals] : []
+      ),
     });
 
     // Output results
@@ -72,6 +106,15 @@ export async function checkCommand(options: CheckOptions): Promise<void> {
         timestamps: options.verbose,
       });
       console.log(formatted);
+    }
+
+    // Write decision record if not JSON mode
+    if (!options.json) {
+      const recordPath = "geval-decision.json";
+      fs.writeFileSync(recordPath, formatDecisionRecord(decisionRecord), "utf-8");
+      if (options.verbose) {
+        console.log(`\nDecision record written to: ${recordPath}`);
+      }
     }
 
     // Exit with appropriate code

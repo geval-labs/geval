@@ -69,6 +69,44 @@ export async function validateCommand(
       validationResult.valid = false;
     }
 
+    // Build contract summary
+    let contractSummary: {
+      name: string;
+      environment: string;
+      type: string;
+      requiredEvals?: number;
+      totalRules?: number;
+      policyRules?: number;
+      environments?: string[];
+    } | undefined;
+
+    if (validationResult.valid) {
+      contractSummary = {
+        name: contract.name,
+        environment: contract.environment || "production",
+        type: contract.policy ? "policy-based" : "eval-based",
+      };
+
+      if (contract.policy) {
+        const globalRules = contract.policy.rules || [];
+        const envRules = Object.values(contract.policy.environments || {}).reduce(
+          (sum: number, env: unknown) => {
+            const envPolicy = env as { rules?: unknown[] };
+            return sum + (envPolicy.rules?.length || 0);
+          },
+          0
+        );
+        contractSummary.policyRules = globalRules.length + envRules;
+        contractSummary.environments = Object.keys(contract.policy.environments || {});
+      } else if (contract.requiredEvals) {
+        contractSummary.requiredEvals = contract.requiredEvals.length;
+        contractSummary.totalRules = contract.requiredEvals.reduce(
+          (sum, e) => sum + e.rules.length,
+          0
+        );
+      }
+    }
+
     // Output result
     outputValidationResult(
       {
@@ -76,17 +114,7 @@ export async function validateCommand(
         file: contractPath,
         errors: validationResult.errors,
         warnings: validationResult.warnings,
-        contract: validationResult.valid
-          ? {
-              name: contract.name,
-              environment: contract.environment,
-              requiredEvals: contract.requiredEvals.length,
-              totalRules: contract.requiredEvals.reduce(
-                (sum, e) => sum + e.rules.length,
-                0
-              ),
-            }
-          : undefined,
+        contract: contractSummary,
       },
       options,
       useColor
@@ -123,8 +151,11 @@ interface ValidationOutput {
   contract?: {
     name: string;
     environment: string;
-    requiredEvals: number;
-    totalRules: number;
+    type: string;
+    requiredEvals?: number;
+    totalRules?: number;
+    policyRules?: number;
+    environments?: string[];
   };
 }
 
@@ -153,8 +184,17 @@ function outputValidationResult(
     if (result.contract) {
       console.log(`  Name: ${result.contract.name}`);
       console.log(`  Environment: ${result.contract.environment}`);
-      console.log(`  Required Evals: ${result.contract.requiredEvals}`);
-      console.log(`  Total Rules: ${result.contract.totalRules}`);
+      console.log(`  Type: ${result.contract.type}`);
+      
+      if (result.contract.type === "policy-based") {
+        console.log(`  Policy Rules: ${result.contract.policyRules || 0}`);
+        if (result.contract.environments && result.contract.environments.length > 0) {
+          console.log(`  Environments: ${result.contract.environments.join(", ")}`);
+        }
+      } else {
+        console.log(`  Required Evals: ${result.contract.requiredEvals || 0}`);
+        console.log(`  Total Rules: ${result.contract.totalRules || 0}`);
+      }
     }
   } else {
     console.log(
