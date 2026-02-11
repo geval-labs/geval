@@ -12,7 +12,7 @@ import type { NormalizedEvalResult } from "../types/index.js";
 
 /**
  * Parse eval results from a source file using user-defined configuration
- * 
+ *
  * @example
  * ```typescript
  * const config = {
@@ -23,7 +23,7 @@ import type { NormalizedEvalResult } from "../types/index.js";
  *   ],
  *   evalName: { fixed: "my-eval" }
  * };
- * 
+ *
  * const result = parseEvalSource(csvContent, config);
  * // { evalName: "my-eval", runId: "...", metrics: { accuracy: 0.95, latency: 120, status: 0.98 } }
  * ```
@@ -59,21 +59,21 @@ export function parseEvalSource(
  */
 function detectSourceType(content: string): SourceType {
   const trimmed = content.trim();
-  
+
   if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
     return "json";
   }
-  
+
   if (isCsv(content)) {
     return "csv";
   }
-  
+
   // Check for JSONL (multiple JSON objects, one per line)
   const firstLine = trimmed.split("\n")[0]?.trim() ?? "";
   if (firstLine.startsWith("{") && firstLine.endsWith("}")) {
     return "jsonl";
   }
-  
+
   // Default to CSV
   return "csv";
 }
@@ -152,10 +152,7 @@ function parseJsonlToRows(content: string): SourceRow[] {
 /**
  * Flatten nested object to single-level with dot notation keys
  */
-function flattenObject(
-  obj: Record<string, unknown>,
-  prefix = ""
-): SourceRow {
+function flattenObject(obj: Record<string, unknown>, prefix = ""): SourceRow {
   const result: SourceRow = {};
 
   for (const [key, value] of Object.entries(obj)) {
@@ -191,17 +188,11 @@ function aggregateMetrics(
   // Process each metric definition
   for (const metricDef of config.metrics) {
     const metricConfig = normalizeMetricConfig(metricDef);
-    
-    const values = extractColumnValues(
-      rows,
-      metricConfig.column,
-      metricConfig.filter
-    );
 
-    const validValues = values.filter(
-      (v) => v !== null && v !== undefined && v !== ""
-    );
-    
+    const values = extractColumnValues(rows, metricConfig.column, metricConfig.filter);
+
+    const validValues = values.filter((v) => v !== null && v !== undefined && v !== "");
+
     if (validValues.length > 0) {
       const aggregatedValue = aggregate(values, metricConfig.aggregate);
       const metricName = metricConfig.as ?? metricConfig.column;
@@ -220,7 +211,7 @@ function aggregateMetrics(
 
   // Extract timestamp
   const timestamp = config.timestamp
-    ? (rows[0]?.[config.timestamp] as string) ?? undefined
+    ? ((rows[0]?.[config.timestamp] as string) ?? undefined)
     : undefined;
 
   // Extract metadata
@@ -229,9 +220,7 @@ function aggregateMetrics(
     const metadataConfig = config.metadata as Record<string, string>;
     for (const [key, column] of Object.entries(metadataConfig)) {
       const value = rows[0]?.[column];
-      metadata[key] = value !== null && value !== undefined 
-        ? String(value) 
-        : undefined;
+      metadata[key] = value !== null && value !== undefined ? String(value) : undefined;
     }
   }
 
@@ -252,9 +241,7 @@ function aggregateMetrics(
 /**
  * Normalize metric config (string -> full config)
  */
-function normalizeMetricConfig(
-  config: string | MetricColumn
-): MetricColumn {
+function normalizeMetricConfig(config: string | MetricColumn): MetricColumn {
   if (typeof config === "string") {
     return { column: config, aggregate: "avg" };
   }
@@ -270,11 +257,11 @@ function extractStringValue(
   fallback: string
 ): string {
   if (!config) return fallback;
-  
+
   if (typeof config === "object" && "fixed" in config) {
     return config.fixed;
   }
-  
+
   // It's a column name
   const value = rows[0]?.[config];
   return value !== null && value !== undefined ? String(value) : fallback;
@@ -292,7 +279,7 @@ export function validateSourceColumns(
   for (const metric of config.metrics) {
     const col = typeof metric === "string" ? metric : metric.column;
     requiredColumns.push(col);
-    
+
     if (typeof metric === "object" && metric.filter) {
       requiredColumns.push(metric.filter.column);
     }
@@ -312,9 +299,7 @@ export function validateSourceColumns(
     requiredColumns.push(...Object.values(metadataConfig));
   }
 
-  const missingColumns = requiredColumns.filter(
-    (col) => !headers.includes(col)
-  );
+  const missingColumns = requiredColumns.filter((col) => !headers.includes(col));
 
   return {
     valid: missingColumns.length === 0,

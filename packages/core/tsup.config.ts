@@ -13,5 +13,5 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
-  treeshake: false,  // Disable tree-shaking to preserve all exports
+  treeshake: false, // Disable tree-shaking to preserve all exports
 });

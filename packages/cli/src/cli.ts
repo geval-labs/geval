@@ -23,11 +23,17 @@ program
   .command("check")
   .description("Evaluate contracts against eval results and enforce decisions")
   .requiredOption("-c, --contract <path>", "Path to eval contract (YAML/JSON)")
-  .requiredOption("-e, --eval <paths...>", "Path(s) to eval result files (CSV/JSON/JSONL)")
+  .requiredOption(
+    "-e, --eval <paths...>",
+    "Path(s) to eval result files (CSV/JSON/JSONL)"
+  )
   .option("-b, --baseline <path>", "Path to baseline eval results (JSON)")
   .option("--signals <path>", "Path to signals file (JSON)")
   .option("--env <env>", "Environment (development|staging|production)")
-  .option("--adapter <name>", "Force specific adapter (promptfoo, langsmith, openevals, generic)")
+  .option(
+    "--adapter <name>",
+    "Force specific adapter (promptfoo, langsmith, openevals, generic)"
+  )
   .option("--json", "Output results as JSON")
   .option("--no-color", "Disable colored output")
   .option("--verbose", "Show detailed output")
@@ -58,11 +64,17 @@ program
   .command("explain")
   .description("Explain why a contract passed or failed")
   .requiredOption("-c, --contract <path>", "Path to eval contract (YAML/JSON)")
-  .requiredOption("-e, --eval <paths...>", "Path(s) to eval result files (CSV/JSON/JSONL)")
+  .requiredOption(
+    "-e, --eval <paths...>",
+    "Path(s) to eval result files (CSV/JSON/JSONL)"
+  )
   .option("-b, --baseline <path>", "Path to baseline eval results (JSON)")
   .option("--signals <path>", "Path to signals file (JSON)")
   .option("--env <env>", "Environment (development|staging|production)")
-  .option("--adapter <name>", "Force specific adapter (promptfoo, langsmith, openevals, generic)")
+  .option(
+    "--adapter <name>",
+    "Force specific adapter (promptfoo, langsmith, openevals, generic)"
+  )
   .option("--verbose", "Show detailed explanations")
   .option("--no-color", "Disable colored output")
   .action(explainCommand);

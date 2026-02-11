@@ -11,7 +11,7 @@
       "persistent": true
     },
     "lint": {
-      "dependsOn": ["^build"] 
+      "dependsOn": ["^build"]
     },
     "lint:fix": {
       "dependsOn": ["^build"]

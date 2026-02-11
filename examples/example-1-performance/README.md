@@ -39,6 +39,7 @@ npx ts-node --esm run-example.ts
 ## Expected Output
 
 The script will:
+
 1. Load the performance contract
 2. Test with passing JSON results (should PASS)
 3. Test with failing JSON results (should BLOCK)
@@ -48,6 +49,7 @@ The script will:
 ## Contract Rules
 
 This contract enforces:
+
 - **P95 latency** ≤ 200ms
 - **P99 latency** ≤ 500ms
 - **Throughput** ≥ 1000 req/s
@@ -58,6 +60,7 @@ This contract enforces:
 ## CSV Aggregation
 
 The CSV file contains raw request data. Geval automatically:
+
 - Aggregates `latency_ms` using P95 and P99 percentiles
 - Calculates average `requests_per_second` as throughput
 - Computes average `error_rate`

@@ -158,7 +158,9 @@ onViolation:
     });
 
     it("handles multiple eval files", () => {
-      const result = runCli("check --contract contract.yaml --eval passing.json --eval passing.json");
+      const result = runCli(
+        "check --contract contract.yaml --eval passing.json --eval passing.json"
+      );
       expect(result.exitCode).toBe(0);
     });
 
@@ -181,12 +183,16 @@ onViolation:
     });
 
     it("supports --adapter flag", () => {
-      const result = runCli("check --contract contract.yaml --eval passing.json --adapter generic");
+      const result = runCli(
+        "check --contract contract.yaml --eval passing.json --adapter generic"
+      );
       expect(result.exitCode).toBe(0);
     });
 
     it("supports baseline comparison", () => {
-      const result = runCli("check --contract contract.yaml --eval passing.json --baseline baseline.json");
+      const result = runCli(
+        "check --contract contract.yaml --eval passing.json --baseline baseline.json"
+      );
       expect(result.exitCode).toBe(0);
     });
   });
@@ -237,7 +243,9 @@ onViolation:
     });
 
     it("shows differences in JSON format", () => {
-      const result = runCli("diff --previous baseline.json --current passing.json --json");
+      const result = runCli(
+        "diff --previous baseline.json --current passing.json --json"
+      );
       expect(result.exitCode).toBe(0);
       const json = JSON.parse(result.stdout);
       // Diff returns object with diffs array

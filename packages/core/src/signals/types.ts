@@ -14,11 +14,7 @@ export type SignalType = z.infer<typeof SignalTypeSchema>;
 /**
  * Human review status
  */
-export const HumanReviewStatusSchema = z.enum([
-  "pending",
-  "approved",
-  "rejected",
-]);
+export const HumanReviewStatusSchema = z.enum(["pending", "approved", "rejected"]);
 export type HumanReviewStatus = z.infer<typeof HumanReviewStatusSchema>;
 
 /**

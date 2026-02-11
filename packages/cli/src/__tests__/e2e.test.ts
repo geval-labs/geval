@@ -120,11 +120,11 @@ sources:
     );
 
     expect(output).toContain("PASS");
-    
+
     // Check that decision record was created
     const recordPath = path.join(testDir, "geval-decision.json");
     expect(fs.existsSync(recordPath)).toBe(true);
-    
+
     const record = JSON.parse(fs.readFileSync(recordPath, "utf-8"));
     expect(record.decision).toBe("PASS");
     expect(record.environment).toBe("production");

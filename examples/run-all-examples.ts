@@ -1,6 +1,6 @@
 /**
  * Test Runner for All Examples
- * 
+ *
  * This script runs all examples to verify they work end-to-end.
  */
 
@@ -32,7 +32,7 @@ const examples = [
 
 async function main() {
   console.log("🧪 Running All Geval Examples\n");
-  console.log("=" .repeat(60) + "\n");
+  console.log("=".repeat(60) + "\n");
 
   const results: Array<{ name: string; success: boolean; error?: string }> = [];
 
@@ -87,7 +87,7 @@ async function main() {
   }
 
   // Summary
-  console.log("\n" + "=" .repeat(60));
+  console.log("\n" + "=".repeat(60));
   console.log("📊 Summary\n");
 
   const passed = results.filter((r) => r.success).length;

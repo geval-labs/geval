@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { parseSignals, normalizeSignals, filterSignalsByType, findSignalByName } from "../signals/parser.js";
+import {
+  parseSignals,
+  normalizeSignals,
+  filterSignalsByType,
+  findSignalByName,
+} from "../signals/parser.js";
 import type { Signal } from "../signals/types.js";
 
 describe("Signals", () => {

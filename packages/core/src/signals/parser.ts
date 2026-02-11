@@ -64,20 +64,14 @@ export function normalizeSignals(signals: Signal[]): Signal[] {
 /**
  * Filter signals by type
  */
-export function filterSignalsByType(
-  signals: Signal[],
-  type: SignalType
-): Signal[] {
+export function filterSignalsByType(signals: Signal[], type: SignalType): Signal[] {
   return signals.filter((s) => s.type === type);
 }
 
 /**
  * Find signal by name
  */
-export function findSignalByName(
-  signals: Signal[],
-  name: string
-): Signal | undefined {
+export function findSignalByName(signals: Signal[], name: string): Signal | undefined {
   return signals.find((s) => s.name === name);
 }
 

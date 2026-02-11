@@ -1,7 +1,12 @@
 import type { NormalizedEvalResult } from "../types/index.js";
 import { parseCsv, isCsv } from "./csv-parser.js";
 import { aggregate, extractColumnValues } from "./aggregator.js";
-import type { SourceRow, MetricColumn, AggregationMethod, EvalSourceConfig } from "./types.js";
+import type {
+  SourceRow,
+  MetricColumn,
+  AggregationMethod,
+  EvalSourceConfig,
+} from "./types.js";
 
 /**
  * Contract with sources - local interface to avoid circular deps
@@ -170,9 +175,7 @@ function parseJsonToRows(content: string, resultsPath?: string): SourceRow[] {
     const arrayKeys = ["results", "data", "items", "rows", "examples"];
     for (const key of arrayKeys) {
       if (Array.isArray(results[key])) {
-        return results[key].map((item: Record<string, unknown>) =>
-          flattenObject(item)
-        );
+        return results[key].map((item: Record<string, unknown>) => flattenObject(item));
       }
     }
     return [flattenObject(results)];
@@ -192,10 +195,7 @@ function parseJsonlToRows(content: string): SourceRow[] {
 /**
  * Flatten nested object
  */
-function flattenObject(
-  obj: Record<string, unknown>,
-  prefix = ""
-): SourceRow {
+function flattenObject(obj: Record<string, unknown>, prefix = ""): SourceRow {
   const result: SourceRow = {};
 
   for (const [key, value] of Object.entries(obj)) {
@@ -204,10 +204,7 @@ function flattenObject(
     if (value === null || value === undefined) {
       result[newKey] = null;
     } else if (typeof value === "object" && !Array.isArray(value)) {
-      Object.assign(
-        result,
-        flattenObject(value as Record<string, unknown>, newKey)
-      );
+      Object.assign(result, flattenObject(value as Record<string, unknown>, newKey));
     } else if (Array.isArray(value)) {
       result[newKey] = JSON.stringify(value);
     } else {
@@ -230,7 +227,10 @@ function aggregateToResult(
   for (const metricDef of config.metrics) {
     const metricConfig = normalizeMetricConfig(metricDef);
     const values = extractColumnValues(rows, metricConfig.column);
-    const aggregatedValue = aggregate(values, metricConfig.aggregate as AggregationMethod);
+    const aggregatedValue = aggregate(
+      values,
+      metricConfig.aggregate as AggregationMethod
+    );
     const metricName = metricConfig.as ?? metricConfig.column;
     metrics[metricName] = aggregatedValue;
   }
@@ -243,7 +243,7 @@ function aggregateToResult(
     runId,
     metrics,
     timestamp: config.timestamp
-      ? (rows[0]?.[config.timestamp] as string) ?? undefined
+      ? ((rows[0]?.[config.timestamp] as string) ?? undefined)
       : undefined,
   };
 }
@@ -251,9 +251,7 @@ function aggregateToResult(
 /**
  * Normalize metric config
  */
-function normalizeMetricConfig(
-  config: string | MetricColumn
-): MetricColumn {
+function normalizeMetricConfig(config: string | MetricColumn): MetricColumn {
   if (typeof config === "string") {
     return { column: config, aggregate: "avg" };
   }
@@ -287,9 +285,7 @@ function extractRunId(rows: SourceRow[], config: EvalSourceConfig): string {
 
   if (typeof config.runId === "string") {
     const value = rows[0]?.[config.runId];
-    return value !== null && value !== undefined
-      ? String(value)
-      : `run-${Date.now()}`;
+    return value !== null && value !== undefined ? String(value) : `run-${Date.now()}`;
   }
 
   if ("fixed" in config.runId) {

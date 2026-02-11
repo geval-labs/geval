@@ -10,7 +10,15 @@ import {
 } from "../index.js";
 
 describe("evaluate", () => {
-  const createContract = (rules: Array<{ metric: string; operator: string; baseline: string; threshold?: number; maxDelta?: number }>) =>
+  const createContract = (
+    rules: Array<{
+      metric: string;
+      operator: string;
+      baseline: string;
+      threshold?: number;
+      maxDelta?: number;
+    }>
+  ) =>
     parseContract({
       version: 1,
       name: "test-contract",
@@ -153,7 +161,9 @@ describe("evaluate", () => {
         requiredEvals: [
           {
             name: "test-eval",
-            rules: [{ metric: "accuracy", operator: ">=", baseline: "fixed", threshold: 0.9 }],
+            rules: [
+              { metric: "accuracy", operator: ">=", baseline: "fixed", threshold: 0.9 },
+            ],
           },
         ],
         onViolation: { action: "require_approval" },
@@ -171,7 +181,10 @@ describe("formatDecision", () => {
       version: 1,
       name: "test",
       requiredEvals: [
-        { name: "eval", rules: [{ metric: "a", operator: ">=", baseline: "fixed", threshold: 0 }] },
+        {
+          name: "eval",
+          rules: [{ metric: "a", operator: ">=", baseline: "fixed", threshold: 0 }],
+        },
       ],
       onViolation: { action: "block" },
     });
@@ -189,7 +202,10 @@ describe("formatDecision", () => {
       version: 1,
       name: "test",
       requiredEvals: [
-        { name: "eval", rules: [{ metric: "a", operator: ">=", baseline: "fixed", threshold: 10 }] },
+        {
+          name: "eval",
+          rules: [{ metric: "a", operator: ">=", baseline: "fixed", threshold: 10 }],
+        },
       ],
       onViolation: { action: "block" },
     });
@@ -206,47 +222,59 @@ describe("formatDecision", () => {
 
 describe("diffEvalResults", () => {
   it("detects improved metrics", () => {
-    const prev: NormalizedEvalResult[] = [{
-      evalName: "test",
-      runId: "r1",
-      metrics: { accuracy: 0.8 },
-    }];
-    const curr: NormalizedEvalResult[] = [{
-      evalName: "test",
-      runId: "r2",
-      metrics: { accuracy: 0.9 },
-    }];
+    const prev: NormalizedEvalResult[] = [
+      {
+        evalName: "test",
+        runId: "r1",
+        metrics: { accuracy: 0.8 },
+      },
+    ];
+    const curr: NormalizedEvalResult[] = [
+      {
+        evalName: "test",
+        runId: "r2",
+        metrics: { accuracy: 0.9 },
+      },
+    ];
     const diff = diffEvalResults(prev, curr);
     expect(diff.diffs[0].metrics[0].direction).toBe("improved");
     expect(diff.diffs[0].metrics[0].delta).toBeCloseTo(0.1);
   });
 
   it("detects regressed metrics", () => {
-    const prev: NormalizedEvalResult[] = [{
-      evalName: "test",
-      runId: "r1",
-      metrics: { accuracy: 0.9 },
-    }];
-    const curr: NormalizedEvalResult[] = [{
-      evalName: "test",
-      runId: "r2",
-      metrics: { accuracy: 0.8 },
-    }];
+    const prev: NormalizedEvalResult[] = [
+      {
+        evalName: "test",
+        runId: "r1",
+        metrics: { accuracy: 0.9 },
+      },
+    ];
+    const curr: NormalizedEvalResult[] = [
+      {
+        evalName: "test",
+        runId: "r2",
+        metrics: { accuracy: 0.8 },
+      },
+    ];
     const diff = diffEvalResults(prev, curr);
     expect(diff.diffs[0].metrics[0].direction).toBe("regressed");
   });
 
   it("detects new metrics", () => {
-    const prev: NormalizedEvalResult[] = [{
-      evalName: "test",
-      runId: "r1",
-      metrics: {},
-    }];
-    const curr: NormalizedEvalResult[] = [{
-      evalName: "test",
-      runId: "r2",
-      metrics: { newMetric: 0.5 },
-    }];
+    const prev: NormalizedEvalResult[] = [
+      {
+        evalName: "test",
+        runId: "r1",
+        metrics: {},
+      },
+    ];
+    const curr: NormalizedEvalResult[] = [
+      {
+        evalName: "test",
+        runId: "r2",
+        metrics: { newMetric: 0.5 },
+      },
+    ];
     const diff = diffEvalResults(prev, curr);
     expect(diff.diffs[0].metrics[0].direction).toBe("new");
   });

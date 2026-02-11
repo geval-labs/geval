@@ -1,8 +1,4 @@
-import type {
-  Decision,
-  DecisionStatus,
-  NormalizedEvalResult,
-} from "../types/index.js";
+import type { Decision, DecisionStatus, NormalizedEvalResult } from "../types/index.js";
 import type { Signal } from "../signals/types.js";
 import type {
   PolicyRule,
@@ -174,9 +170,7 @@ function evaluateSignalCondition(
         signal.value !== null &&
         condition.field in signal.value
       ) {
-        signalValue = (signal.value as Record<string, unknown>)[
-          condition.field
-        ];
+        signalValue = (signal.value as Record<string, unknown>)[condition.field];
       } else if (signal.metadata?.[condition.field]) {
         signalValue = signal.metadata[condition.field];
       } else {
@@ -189,7 +183,7 @@ function evaluateSignalCondition(
       // Convert both to strings for comparison if they're different types
       let actualValue: unknown = signalValue;
       let expectedValue: unknown = condition.value;
-      
+
       // If both are strings, compare as strings
       // If one is string and other is not, try to convert
       if (typeof signalValue === "string" && typeof condition.value === "string") {
@@ -202,7 +196,7 @@ function evaluateSignalCondition(
         // Try to convert actual to string
         actualValue = String(signalValue);
       }
-      
+
       if (compareValues(actualValue as any, condition.operator, expectedValue as any)) {
         return true;
       }
@@ -218,9 +212,7 @@ function evaluateSignalCondition(
 /**
  * Map policy action to decision status
  */
-function mapPolicyActionToDecisionStatus(
-  action: PolicyAction
-): DecisionStatus {
+function mapPolicyActionToDecisionStatus(action: PolicyAction): DecisionStatus {
   switch (action) {
     case "pass":
       return "PASS";

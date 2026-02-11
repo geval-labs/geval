@@ -58,10 +58,7 @@ export function diffEvalResults(
   // Process all current evals
   for (const [evalName, currResult] of currMap) {
     const prevResult = prevMap.get(evalName);
-    const metricDiffs = diffMetrics(
-      prevResult?.metrics ?? {},
-      currResult.metrics
-    );
+    const metricDiffs = diffMetrics(prevResult?.metrics ?? {}, currResult.metrics);
 
     if (metricDiffs.length > 0) {
       diffs.push({
@@ -96,10 +93,7 @@ export function diffEvalResults(
     }
   }
 
-  const identical =
-    stats.improved === 0 &&
-    stats.regressed === 0 &&
-    stats.new === 0;
+  const identical = stats.improved === 0 && stats.regressed === 0 && stats.new === 0;
 
   return {
     identical,
@@ -216,8 +210,7 @@ function isLowerBetterMetric(metric: string): boolean {
 
   const lowerMetric = metric.toLowerCase();
   return lowerIsBetterPatterns.some(
-    (pattern) =>
-      lowerMetric.includes(pattern) || lowerMetric.endsWith("_" + pattern)
+    (pattern) => lowerMetric.includes(pattern) || lowerMetric.endsWith("_" + pattern)
   );
 }
 
@@ -281,18 +274,14 @@ export function formatDiffResult(
     for (const metricDiff of evalDiff.metrics) {
       const icon = getDirectionIcon(metricDiff.direction, colors);
       const prev =
-        metricDiff.previous !== undefined
-          ? String(metricDiff.previous)
-          : "N/A";
+        metricDiff.previous !== undefined ? String(metricDiff.previous) : "N/A";
       const curr = String(metricDiff.current);
       const deltaStr =
         metricDiff.delta !== undefined
           ? ` (${metricDiff.delta > 0 ? "+" : ""}${metricDiff.delta.toFixed(4)})`
           : "";
 
-      lines.push(
-        `  ${icon} ${metricDiff.metric}: ${prev} → ${curr}${deltaStr}`
-      );
+      lines.push(`  ${icon} ${metricDiff.metric}: ${prev} → ${curr}${deltaStr}`);
     }
     lines.push("");
   }
@@ -303,10 +292,7 @@ export function formatDiffResult(
 /**
  * Get direction icon
  */
-function getDirectionIcon(
-  direction: string,
-  colors: Record<string, string>
-): string {
+function getDirectionIcon(direction: string, colors: Record<string, string>): string {
   switch (direction) {
     case "improved":
       return `${colors.green}↑${colors.reset}`;

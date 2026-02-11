@@ -87,6 +87,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation
@@ -96,6 +97,7 @@ Types:
 - `chore`: Maintenance
 
 Examples:
+
 ```
 feat(core): add support for custom baseline sources
 fix(cli): handle missing baseline file gracefully
@@ -121,7 +123,6 @@ git merge upstream/main
    ```
 
 2. **Make your changes**
-
    - Write clean, readable code
    - Add tests for new functionality
    - Update documentation if needed
@@ -148,7 +149,6 @@ git merge upstream/main
    ```
 
 6. **Open a Pull Request**
-
    - Use a clear, descriptive title
    - Reference any related issues
    - Describe what changes you made and why
@@ -281,6 +281,7 @@ describe("evaluate", () => {
 ### @geval/core
 
 The core library must be:
+
 - Pure (no side effects)
 - Deterministic (no randomness)
 - Framework-agnostic (no Node.js-specific APIs in core logic)
@@ -288,6 +289,7 @@ The core library must be:
 ### @geval/cli
 
 The CLI should:
+
 - Provide clear error messages
 - Support both human and machine-readable output
 - Use appropriate exit codes

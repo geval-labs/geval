@@ -1,11 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import pc from "picocolors";
-import {
-  parseContract,
-  parseContractFromYaml,
-  diffContracts,
-} from "@geval-labs/core";
+import { parseContract, parseContractFromYaml, diffContracts } from "@geval-labs/core";
 
 interface ContractDiffOptions {
   previous: string;
@@ -17,9 +13,7 @@ interface ContractDiffOptions {
 /**
  * Contract diff command implementation
  */
-export async function contractDiffCommand(
-  options: ContractDiffOptions
-): Promise<void> {
+export async function contractDiffCommand(options: ContractDiffOptions): Promise<void> {
   const useColor = options.color !== false;
 
   try {
@@ -83,17 +77,13 @@ function formatAndPrintContractDiff(
   const { identical, diffs, summary } = diffResult;
 
   // Header
-  console.log(
-    useColor ? pc.bold("Contract Diff") : "Contract Diff"
-  );
+  console.log(useColor ? pc.bold("Contract Diff") : "Contract Diff");
   console.log("");
 
   // Summary
   if (identical) {
     console.log(
-      useColor
-        ? pc.green("✓ Contracts are identical")
-        : "✓ Contracts are identical"
+      useColor ? pc.green("✓ Contracts are identical") : "✓ Contracts are identical"
     );
   } else {
     console.log(
@@ -107,24 +97,12 @@ function formatAndPrintContractDiff(
     // Detailed diffs
     console.log(useColor ? pc.bold("Changes:") : "Changes:");
     for (const diff of diffs) {
-      const prevStr =
-        diff.previous !== undefined
-          ? JSON.stringify(diff.previous)
-          : "N/A";
-      const currStr =
-        diff.current !== undefined ? JSON.stringify(diff.current) : "N/A";
+      const prevStr = diff.previous !== undefined ? JSON.stringify(diff.previous) : "N/A";
+      const currStr = diff.current !== undefined ? JSON.stringify(diff.current) : "N/A";
 
       console.log(`  ${useColor ? pc.bold(diff.field) : diff.field}:`);
-      console.log(
-        useColor
-          ? `    ${pc.red("-")} ${prevStr}`
-          : `    - ${prevStr}`
-      );
-      console.log(
-        useColor
-          ? `    ${pc.green("+")} ${currStr}`
-          : `    + ${currStr}`
-      );
+      console.log(useColor ? `    ${pc.red("-")} ${prevStr}` : `    - ${prevStr}`);
+      console.log(useColor ? `    ${pc.green("+")} ${currStr}` : `    + ${currStr}`);
       console.log("");
     }
   }
@@ -138,8 +116,7 @@ function handleError(
   json: boolean | undefined,
   useColor: boolean
 ): never {
-  const message =
-    error instanceof Error ? error.message : "An unknown error occurred";
+  const message = error instanceof Error ? error.message : "An unknown error occurred";
 
   if (json) {
     console.error(
@@ -149,9 +126,7 @@ function handleError(
       })
     );
   } else {
-    console.error(
-      useColor ? pc.red(`Error: ${message}`) : `Error: ${message}`
-    );
+    console.error(useColor ? pc.red(`Error: ${message}`) : `Error: ${message}`);
   }
 
   process.exit(3);

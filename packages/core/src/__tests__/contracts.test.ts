@@ -136,8 +136,14 @@ onViolation:
       const contract = parseContract({
         ...validContractData,
         requiredEvals: [
-          { name: "duplicate", rules: [{ metric: "a", operator: ">=", baseline: "fixed", threshold: 0 }] },
-          { name: "duplicate", rules: [{ metric: "b", operator: ">=", baseline: "fixed", threshold: 0 }] },
+          {
+            name: "duplicate",
+            rules: [{ metric: "a", operator: ">=", baseline: "fixed", threshold: 0 }],
+          },
+          {
+            name: "duplicate",
+            rules: [{ metric: "b", operator: ">=", baseline: "fixed", threshold: 0 }],
+          },
         ],
       });
       const result = validateContract(contract);

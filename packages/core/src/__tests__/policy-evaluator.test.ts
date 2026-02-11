@@ -36,7 +36,7 @@ describe("Policy Evaluator", () => {
                   metric: "accuracy",
                   operator: ">=",
                   baseline: "fixed",
-                  threshold: 0.90,
+                  threshold: 0.9,
                 },
               },
               then: {

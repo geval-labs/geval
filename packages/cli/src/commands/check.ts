@@ -176,21 +176,21 @@ function loadEvalResults(
     if (fileType === "csv" || fileType === "jsonl") {
       // Use contract source config for CSV/JSONL files
       const sourceConfig = contract.sources?.[fileType];
-      
+
       if (!sourceConfig) {
         throw new Error(
           `CSV/JSONL files require a source config in the contract.\n` +
-          `Add a "sources.${fileType}" section to your contract to define how to parse metrics.\n\n` +
-          `Example:\n` +
-          `  sources:\n` +
-          `    ${fileType}:\n` +
-          `      metrics:\n` +
-          `        - column: accuracy\n` +
-          `          aggregate: avg\n` +
-          `        - column: latency\n` +
-          `          aggregate: p95\n` +
-          `      evalName:\n` +
-          `        fixed: "my-eval"`
+            `Add a "sources.${fileType}" section to your contract to define how to parse metrics.\n\n` +
+            `Example:\n` +
+            `  sources:\n` +
+            `    ${fileType}:\n` +
+            `      metrics:\n` +
+            `        - column: accuracy\n` +
+            `          aggregate: avg\n` +
+            `        - column: latency\n` +
+            `          aggregate: p95\n` +
+            `      evalName:\n` +
+            `        fixed: "my-eval"`
         );
       }
 
@@ -210,7 +210,7 @@ function loadEvalResults(
           const parseResult = adapterName
             ? (item: unknown) => parseWithAdapter(item, adapterName)
             : parseEvalResult;
-          
+
           if (Array.isArray(data)) {
             for (const item of data) {
               results.push(parseResult(item));
@@ -242,9 +242,7 @@ function loadBaselines(
 
   if (!fs.existsSync(resolvedPath)) {
     // Baseline is optional - if not found, return empty
-    console.error(
-      pc.yellow(`Warning: Baseline file not found: ${baselinePath}`)
-    );
+    console.error(pc.yellow(`Warning: Baseline file not found: ${baselinePath}`));
     return {};
   }
 
@@ -312,8 +310,7 @@ function handleError(
   json: boolean | undefined,
   useColor: boolean
 ): never {
-  const message =
-    error instanceof Error ? error.message : "An unknown error occurred";
+  const message = error instanceof Error ? error.message : "An unknown error occurred";
 
   if (json) {
     console.error(
@@ -323,9 +320,7 @@ function handleError(
       })
     );
   } else {
-    console.error(
-      useColor ? pc.red(`Error: ${message}`) : `Error: ${message}`
-    );
+    console.error(useColor ? pc.red(`Error: ${message}`) : `Error: ${message}`);
   }
 
   process.exit(EXIT_CODES.ERROR);

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Example 1: Performance Monitoring
- * 
+ *
  * This example demonstrates:
  * 1. Loading a performance contract
  * 2. Parsing eval results from JSON and CSV
@@ -27,18 +27,17 @@ const exampleDir = __dirname;
 
 async function main() {
   console.log("🚀 Example 1: Performance Monitoring\n");
-  console.log("=" .repeat(60) + "\n");
+  console.log("=".repeat(60) + "\n");
 
   // Step 1: Load the contract
   console.log("📄 Step 1: Loading contract...");
-  const contractYaml = readFileSync(
-    join(exampleDir, "contract.yaml"),
-    "utf-8"
-  );
+  const contractYaml = readFileSync(join(exampleDir, "contract.yaml"), "utf-8");
   const contract = parseContractFromYaml(contractYaml);
   console.log(`   Contract: ${contract.name}`);
   console.log(`   Environment: ${contract.environment}`);
-  console.log(`   Required evals: ${contract.requiredEvals.map((e) => e.name).join(", ")}\n`);
+  console.log(
+    `   Required evals: ${contract.requiredEvals.map((e) => e.name).join(", ")}\n`
+  );
 
   // Step 2: Test with passing JSON results
   console.log("📊 Step 2: Testing with passing JSON results...");
@@ -46,12 +45,8 @@ async function main() {
     join(exampleDir, "eval-results/passing.json"),
     "utf-8"
   );
-  const passingResult = parseEvalFile(
-    passingJson,
-    "eval-results/passing.json",
-    contract
-  );
-  
+  const passingResult = parseEvalFile(passingJson, "eval-results/passing.json", contract);
+
   console.log(`   Eval: ${passingResult.evalName}`);
   console.log(`   Run ID: ${passingResult.runId}`);
   console.log("   Metrics:");
@@ -77,11 +72,7 @@ async function main() {
     join(exampleDir, "eval-results/failing.json"),
     "utf-8"
   );
-  const failingResult = parseEvalFile(
-    failingJson,
-    "eval-results/failing.json",
-    contract
-  );
+  const failingResult = parseEvalFile(failingJson, "eval-results/failing.json", contract);
 
   console.log(`   Eval: ${failingResult.evalName}`);
   console.log(`   Run ID: ${failingResult.runId}`);
@@ -160,7 +151,7 @@ async function main() {
   console.log(formatDecision(decisionWithBaseline, { colors: true, verbose: true }));
   console.log();
 
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
   console.log("✅ Example 1 completed successfully!");
 }
 

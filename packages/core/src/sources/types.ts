@@ -4,19 +4,19 @@ import { z } from "zod";
  * Supported aggregation methods for metrics
  */
 export const AggregationMethodSchema = z.enum([
-  "avg",       // Average of all values
-  "sum",       // Sum of all values
-  "min",       // Minimum value
-  "max",       // Maximum value
-  "count",     // Count of rows
-  "p50",       // 50th percentile (median)
-  "p90",       // 90th percentile
-  "p95",       // 95th percentile
-  "p99",       // 99th percentile
+  "avg", // Average of all values
+  "sum", // Sum of all values
+  "min", // Minimum value
+  "max", // Maximum value
+  "count", // Count of rows
+  "p50", // 50th percentile (median)
+  "p90", // 90th percentile
+  "p95", // 95th percentile
+  "p99", // 99th percentile
   "pass_rate", // Percentage where value is truthy or "success"/"pass"/true/1
   "fail_rate", // Percentage where value is falsy or "error"/"fail"/false/0
-  "first",     // First value (for single-value extraction)
-  "last",      // Last value
+  "first", // First value (for single-value extraction)
+  "last", // Last value
 ]);
 export type AggregationMethod = z.infer<typeof AggregationMethodSchema>;
 
@@ -31,11 +31,13 @@ export const MetricColumnSchema = z.object({
   /** Optional: rename the metric in output */
   as: z.string().optional(),
   /** Optional: filter rows before aggregation */
-  filter: z.object({
-    column: z.string(),
-    equals: z.union([z.string(), z.number(), z.boolean()]).optional(),
-    notEquals: z.union([z.string(), z.number(), z.boolean()]).optional(),
-  }).optional(),
+  filter: z
+    .object({
+      column: z.string(),
+      equals: z.union([z.string(), z.number(), z.boolean()]).optional(),
+      notEquals: z.union([z.string(), z.number(), z.boolean()]).optional(),
+    })
+    .optional(),
 });
 export type MetricColumn = z.infer<typeof MetricColumnSchema>;
 
@@ -52,45 +54,55 @@ export type SourceType = z.infer<typeof SourceTypeSchema>;
 export const EvalSourceConfigSchema = z.object({
   /** Source file type (auto-detected if not specified) */
   type: SourceTypeSchema.optional(),
-  
+
   /** Metric columns to extract */
-  metrics: z.array(
-    z.union([
-      z.string(), // Simple: just column name, defaults to avg
-      MetricColumnSchema, // Full config
-    ])
-  ).min(1),
-  
+  metrics: z
+    .array(
+      z.union([
+        z.string(), // Simple: just column name, defaults to avg
+        MetricColumnSchema, // Full config
+      ])
+    )
+    .min(1),
+
   /** Column or fixed value for eval name */
-  evalName: z.union([
-    z.string(), // Column name
-    z.object({ fixed: z.string() }), // Fixed value
-  ]).optional(),
-  
+  evalName: z
+    .union([
+      z.string(), // Column name
+      z.object({ fixed: z.string() }), // Fixed value
+    ])
+    .optional(),
+
   /** Column or fixed value for run ID */
-  runId: z.union([
-    z.string(), // Column name
-    z.object({ fixed: z.string() }), // Fixed value
-  ]).optional(),
-  
+  runId: z
+    .union([
+      z.string(), // Column name
+      z.object({ fixed: z.string() }), // Fixed value
+    ])
+    .optional(),
+
   /** Column for timestamp */
   timestamp: z.string().optional(),
-  
+
   /** Metadata columns to include */
   metadata: z.record(z.string()).optional(),
-  
+
   /** CSV-specific options */
-  csv: z.object({
-    delimiter: z.string().default(","),
-    quote: z.string().default('"'),
-    hasHeader: z.boolean().default(true),
-  }).optional(),
-  
+  csv: z
+    .object({
+      delimiter: z.string().default(","),
+      quote: z.string().default('"'),
+      hasHeader: z.boolean().default(true),
+    })
+    .optional(),
+
   /** JSON-specific options */
-  json: z.object({
-    /** Path to array of results (e.g., "results" or "data.items") */
-    resultsPath: z.string().optional(),
-  }).optional(),
+  json: z
+    .object({
+      /** Path to array of results (e.g., "results" or "data.items") */
+      resultsPath: z.string().optional(),
+    })
+    .optional(),
 });
 export type EvalSourceConfig = z.infer<typeof EvalSourceConfigSchema>;
 

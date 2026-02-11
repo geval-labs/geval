@@ -44,3 +44,7 @@ lerna-debug.log*
 .cache/
 pnpm-lock.yaml
 yarn.lock
+# Generated documentation and test files
+geval-doc*.txt
+*-eval-test-*.csv
+eval_result.csv

@@ -70,15 +70,17 @@ export async function validateCommand(
     }
 
     // Build contract summary
-    let contractSummary: {
-      name: string;
-      environment: string;
-      type: string;
-      requiredEvals?: number;
-      totalRules?: number;
-      policyRules?: number;
-      environments?: string[];
-    } | undefined;
+    let contractSummary:
+      | {
+          name: string;
+          environment: string;
+          type: string;
+          requiredEvals?: number;
+          totalRules?: number;
+          policyRules?: number;
+          environments?: string[];
+        }
+      | undefined;
 
     if (validationResult.valid) {
       contractSummary = {
@@ -122,8 +124,7 @@ export async function validateCommand(
 
     process.exit(validationResult.valid ? 0 : 1);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "An unknown error occurred";
+    const message = error instanceof Error ? error.message : "An unknown error occurred";
 
     if (options.json) {
       console.error(
@@ -134,9 +135,7 @@ export async function validateCommand(
         })
       );
     } else {
-      console.error(
-        useColor ? pc.red(`Error: ${message}`) : `Error: ${message}`
-      );
+      console.error(useColor ? pc.red(`Error: ${message}`) : `Error: ${message}`);
     }
 
     process.exit(1);
@@ -174,18 +173,14 @@ function outputValidationResult(
 
   // Text output
   if (result.valid) {
-    console.log(
-      useColor
-        ? pc.green("✓ Contract is valid")
-        : "✓ Contract is valid"
-    );
+    console.log(useColor ? pc.green("✓ Contract is valid") : "✓ Contract is valid");
     console.log("");
 
     if (result.contract) {
       console.log(`  Name: ${result.contract.name}`);
       console.log(`  Environment: ${result.contract.environment}`);
       console.log(`  Type: ${result.contract.type}`);
-      
+
       if (result.contract.type === "policy-based") {
         console.log(`  Policy Rules: ${result.contract.policyRules || 0}`);
         if (result.contract.environments && result.contract.environments.length > 0) {
@@ -198,9 +193,7 @@ function outputValidationResult(
     }
   } else {
     console.log(
-      useColor
-        ? pc.red("✗ Contract validation failed")
-        : "✗ Contract validation failed"
+      useColor ? pc.red("✗ Contract validation failed") : "✗ Contract validation failed"
     );
     console.log("");
   }

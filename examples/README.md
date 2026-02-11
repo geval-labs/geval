@@ -5,15 +5,18 @@ This directory contains complete, working examples demonstrating how to use `@ge
 ## Examples
 
 ### Example 1: Performance Monitoring
+
 **Location:** `example-1-performance/`
 
 Demonstrates performance monitoring for API endpoints:
+
 - Latency requirements (P95, P99)
 - Throughput requirements
 - Error rate monitoring
 - Regression detection
 
 **Run it:**
+
 ```bash
 cd example-1-performance
 npm install
@@ -21,15 +24,18 @@ npm run run
 ```
 
 ### Example 2: Safety and Compliance
+
 **Location:** `example-2-safety/`
 
 Demonstrates safety and compliance enforcement:
+
 - Toxicity and bias detection
 - PII leakage prevention (zero tolerance)
 - Harmful content detection
 - Safety regression detection
 
 **Run it:**
+
 ```bash
 cd example-2-safety
 npm install
@@ -37,14 +43,17 @@ npm run run
 ```
 
 ### Example 3: Multi-Eval Comparison
+
 **Location:** `example-3-multi-eval/`
 
 Demonstrates comprehensive evaluation across multiple suites:
+
 - Multiple eval suites (accuracy, performance, cost, UX)
 - Baseline comparison for each suite
 - Cross-suite evaluation
 
 **Run it:**
+
 ```bash
 cd example-3-multi-eval
 npm install
@@ -71,6 +80,7 @@ npx ts-node --esm run-all-examples.ts
 ## What Each Example Includes
 
 Each example contains:
+
 - ✅ **Contract YAML** - Defines requirements and source parsing config
 - ✅ **Eval Results** - Sample JSON and CSV files with eval data
 - ✅ **TypeScript Script** - Complete programmatic usage example

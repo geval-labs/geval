@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Example 3: Multi-Eval Comparison
- * 
+ *
  * This example demonstrates:
  * 1. Loading a contract with multiple required evals
  * 2. Parsing multiple eval results from JSON files
@@ -30,14 +30,11 @@ const exampleDir = __dirname;
 
 async function main() {
   console.log("🔀 Example 3: Multi-Eval Comparison\n");
-  console.log("=" .repeat(60) + "\n");
+  console.log("=".repeat(60) + "\n");
 
   // Step 1: Load the contract
   console.log("📄 Step 1: Loading multi-eval contract...");
-  const contractYaml = readFileSync(
-    join(exampleDir, "contract.yaml"),
-    "utf-8"
-  );
+  const contractYaml = readFileSync(join(exampleDir, "contract.yaml"), "utf-8");
   const contract = parseContractFromYaml(contractYaml);
   console.log(`   Contract: ${contract.name}`);
   console.log(`   Environment: ${contract.environment}`);
@@ -63,7 +60,9 @@ async function main() {
       const content = readFileSync(filePath, "utf-8");
       const result = parseEvalFile(content, filePath, contract);
       evalResults.push(result);
-      console.log(`   ✓ Loaded ${result.evalName}: ${Object.keys(result.metrics).length} metric(s)`);
+      console.log(
+        `   ✓ Loaded ${result.evalName}: ${Object.keys(result.metrics).length} metric(s)`
+      );
     }
   }
   console.log();
@@ -140,16 +139,18 @@ async function main() {
   // Note: When a CSV contains multiple eval suites (different eval_suite values),
   // you need to split the CSV by eval_suite and parse each group separately.
   // The current parseEvalFile aggregates all rows into a single eval result.
-  
+
   console.log("   Note: CSV with multiple eval suites requires splitting by eval_suite");
-  console.log("   For this example, we'll demonstrate parsing a single eval suite from CSV");
+  console.log(
+    "   For this example, we'll demonstrate parsing a single eval suite from CSV"
+  );
   console.log();
 
   // Example: Parse only accuracy-suite rows from CSV
   // In practice, you'd filter the CSV rows by eval_suite before parsing
   const csvLines = csvContent.split("\n");
-  const accuracySuiteRows = csvLines.filter((line, index) => 
-    index === 0 || line.startsWith("accuracy-suite")
+  const accuracySuiteRows = csvLines.filter(
+    (line, index) => index === 0 || line.startsWith("accuracy-suite")
   );
   const accuracyCsvContent = accuracySuiteRows.join("\n");
 
@@ -178,7 +179,7 @@ async function main() {
   console.log();
 
   // Step 6: Summary
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
   console.log("📋 Summary:");
   console.log(`   - Contract: ${contract.name}`);
   console.log(`   - Required evals: ${contract.requiredEvals.length}`);

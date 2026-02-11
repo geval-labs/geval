@@ -196,9 +196,19 @@ describe("Source Config Schema", () => {
   describe("AggregationMethodSchema", () => {
     it("validates all aggregation methods", () => {
       const methods = [
-        "avg", "sum", "min", "max", "count",
-        "p50", "p90", "p95", "p99",
-        "pass_rate", "fail_rate", "first", "last",
+        "avg",
+        "sum",
+        "min",
+        "max",
+        "count",
+        "p50",
+        "p90",
+        "p95",
+        "p99",
+        "pass_rate",
+        "fail_rate",
+        "first",
+        "last",
       ];
       for (const method of methods) {
         expect(() => AggregationMethodSchema.parse(method)).not.toThrow();
@@ -226,7 +236,11 @@ describe("Source Config Schema", () => {
         metrics: [
           { column: "accuracy", aggregate: "avg" },
           { column: "latency", aggregate: "p95", as: "latency_p95" },
-          { column: "status", aggregate: "pass_rate", filter: { column: "type", equals: "test" } },
+          {
+            column: "status",
+            aggregate: "pass_rate",
+            filter: { column: "type", equals: "test" },
+          },
         ],
         evalName: { fixed: "my-eval" },
         runId: "session_id",

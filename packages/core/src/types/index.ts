@@ -4,14 +4,7 @@ import { z } from "zod";
 // OPERATORS
 // =============================================================================
 
-export const ComparisonOperatorSchema = z.enum([
-  "==",
-  "!=",
-  "<",
-  "<=",
-  ">",
-  ">=",
-]);
+export const ComparisonOperatorSchema = z.enum(["==", "!=", "<", "<=", ">", ">="]);
 export type ComparisonOperator = z.infer<typeof ComparisonOperatorSchema>;
 
 // =============================================================================
@@ -29,33 +22,21 @@ export type BaselineType = z.infer<typeof BaselineTypeSchema>;
 // DECISION STATUS
 // =============================================================================
 
-export const DecisionStatusSchema = z.enum([
-  "PASS",
-  "BLOCK",
-  "REQUIRES_APPROVAL",
-]);
+export const DecisionStatusSchema = z.enum(["PASS", "BLOCK", "REQUIRES_APPROVAL"]);
 export type DecisionStatus = z.infer<typeof DecisionStatusSchema>;
 
 // =============================================================================
 // VIOLATION ACTION
 // =============================================================================
 
-export const ViolationActionSchema = z.enum([
-  "block",
-  "require_approval",
-  "warn",
-]);
+export const ViolationActionSchema = z.enum(["block", "require_approval", "warn"]);
 export type ViolationAction = z.infer<typeof ViolationActionSchema>;
 
 // =============================================================================
 // ENVIRONMENT
 // =============================================================================
 
-export const EnvironmentSchema = z.enum([
-  "development",
-  "staging",
-  "production",
-]);
+export const EnvironmentSchema = z.enum(["development", "staging", "production"]);
 export type Environment = z.infer<typeof EnvironmentSchema>;
 
 // =============================================================================
@@ -113,35 +94,36 @@ import { EvalSourceConfigSchema } from "../sources/types.js";
 // PolicySchema will be imported when needed
 // =============================================================================
 
-export const EvalContractSchema = z.object({
-  /** Schema version for forward compatibility */
-  version: z.literal(1),
-  /** Name of the contract */
-  name: z.string().min(1),
-  /** Optional description */
-  description: z.string().optional(),
-  /** Environment this contract applies to */
-  environment: EnvironmentSchema.optional().default("production"),
-  /** Source configurations for parsing eval files */
-  sources: z.object({
-    csv: EvalSourceConfigSchema.optional(),
-    json: EvalSourceConfigSchema.optional(),
-    jsonl: EvalSourceConfigSchema.optional(),
-  }).optional(),
-  /** Required eval suites (legacy - for backward compatibility) */
-  requiredEvals: z.array(RequiredEvalSchema).optional(),
-  /** Policy-based rules (new - supports signals and eval metrics) */
-  policy: z.any().optional(), // Will be validated separately to avoid circular deps
-  /** What to do on violation (legacy - used if policy not specified) */
-  onViolation: ViolationHandlerSchema.optional(),
-  /** Contract metadata */
-  metadata: z.record(z.string()).optional(),
-}).refine(
-  (data) => data.requiredEvals !== undefined || data.policy !== undefined,
-  {
+export const EvalContractSchema = z
+  .object({
+    /** Schema version for forward compatibility */
+    version: z.literal(1),
+    /** Name of the contract */
+    name: z.string().min(1),
+    /** Optional description */
+    description: z.string().optional(),
+    /** Environment this contract applies to */
+    environment: EnvironmentSchema.optional().default("production"),
+    /** Source configurations for parsing eval files */
+    sources: z
+      .object({
+        csv: EvalSourceConfigSchema.optional(),
+        json: EvalSourceConfigSchema.optional(),
+        jsonl: EvalSourceConfigSchema.optional(),
+      })
+      .optional(),
+    /** Required eval suites (legacy - for backward compatibility) */
+    requiredEvals: z.array(RequiredEvalSchema).optional(),
+    /** Policy-based rules (new - supports signals and eval metrics) */
+    policy: z.any().optional(), // Will be validated separately to avoid circular deps
+    /** What to do on violation (legacy - used if policy not specified) */
+    onViolation: ViolationHandlerSchema.optional(),
+    /** Contract metadata */
+    metadata: z.record(z.string()).optional(),
+  })
+  .refine((data) => data.requiredEvals !== undefined || data.policy !== undefined, {
     message: "Contract must have either 'requiredEvals' or 'policy'",
-  }
-);
+  });
 export type EvalContract = z.infer<typeof EvalContractSchema>;
 
 // =============================================================================

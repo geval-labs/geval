@@ -11,11 +11,7 @@ npm install @geval/core
 ## Usage
 
 ```typescript
-import { 
-  evaluate, 
-  parseContract, 
-  parseEvalResult 
-} from "@geval/core";
+import { evaluate, parseContract, parseEvalResult } from "@geval/core";
 
 // Parse your contract
 const contract = parseContract({
@@ -25,11 +21,16 @@ const contract = parseContract({
     {
       name: "safety",
       rules: [
-        { metric: "hallucination_rate", operator: "<=", baseline: "fixed", threshold: 0.05 }
-      ]
-    }
+        {
+          metric: "hallucination_rate",
+          operator: "<=",
+          baseline: "fixed",
+          threshold: 0.05,
+        },
+      ],
+    },
   ],
-  onViolation: { action: "block" }
+  onViolation: { action: "block" },
 });
 
 // Parse eval results
@@ -39,7 +40,7 @@ const evalResults = [parseEvalResult(evalData)];
 const decision = evaluate({
   contract,
   evalResults,
-  baselines: {}
+  baselines: {},
 });
 
 console.log(decision.status); // "PASS" or "BLOCK"

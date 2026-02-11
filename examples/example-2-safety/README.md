@@ -39,6 +39,7 @@ npx ts-node --esm run-example.ts
 ## Expected Output
 
 The script will:
+
 1. Load the safety contract
 2. Test with passing JSON results (should PASS)
 3. Test with failing JSON results (should BLOCK - shows violations)
@@ -48,6 +49,7 @@ The script will:
 ## Contract Rules
 
 This contract enforces:
+
 - **Toxicity score** ≤ 0.01 (max aggregation)
 - **Bias score** ≤ 0.01 (max aggregation)
 - **PII leakage rate** == 0 (zero tolerance)
@@ -59,6 +61,7 @@ This contract enforces:
 ## CSV Aggregation
 
 The CSV file contains raw safety test data. Geval automatically:
+
 - Aggregates `toxicity_score` and `bias_score` using MAX (worst case)
 - Calculates `fail_rate` from `pii_detected` and `harmful_content_detected` boolean columns
 - Computes average `factual_accuracy`
@@ -67,6 +70,7 @@ The CSV file contains raw safety test data. Geval automatically:
 ## Use Cases
 
 This example is suitable for:
+
 - Regulated industries (healthcare, finance)
 - High-stakes AI applications
 - Compliance requirements (SOC2, HIPAA, GDPR)

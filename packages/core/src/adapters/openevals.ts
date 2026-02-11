@@ -11,22 +11,26 @@ const OpenEvalsResultSchema = z.object({
   model: z.string().optional(),
   dataset: z.string().optional(),
   metrics: z.record(z.number()).optional(),
-  results: z.array(
-    z.object({
-      input: z.unknown().optional(),
-      output: z.unknown().optional(),
-      expected: z.unknown().optional(),
-      scores: z.record(z.number()).optional(),
-      passed: z.boolean().optional(),
-      metadata: z.record(z.unknown()).optional(),
+  results: z
+    .array(
+      z.object({
+        input: z.unknown().optional(),
+        output: z.unknown().optional(),
+        expected: z.unknown().optional(),
+        scores: z.record(z.number()).optional(),
+        passed: z.boolean().optional(),
+        metadata: z.record(z.unknown()).optional(),
+      })
+    )
+    .optional(),
+  summary: z
+    .object({
+      total: z.number().optional(),
+      passed: z.number().optional(),
+      failed: z.number().optional(),
+      accuracy: z.number().optional(),
     })
-  ).optional(),
-  summary: z.object({
-    total: z.number().optional(),
-    passed: z.number().optional(),
-    failed: z.number().optional(),
-    accuracy: z.number().optional(),
-  }).optional(),
+    .optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -87,10 +91,14 @@ export class OpenEvalsAdapter implements EvalAdapter {
     }
 
     if (data.summary) {
-      if (data.summary.accuracy !== undefined) metrics["accuracy"] = data.summary.accuracy;
-      if (data.summary.total !== undefined) metrics["total_examples"] = data.summary.total;
-      if (data.summary.passed !== undefined) metrics["passed_examples"] = data.summary.passed;
-      if (data.summary.failed !== undefined) metrics["failed_examples"] = data.summary.failed;
+      if (data.summary.accuracy !== undefined)
+        metrics["accuracy"] = data.summary.accuracy;
+      if (data.summary.total !== undefined)
+        metrics["total_examples"] = data.summary.total;
+      if (data.summary.passed !== undefined)
+        metrics["passed_examples"] = data.summary.passed;
+      if (data.summary.failed !== undefined)
+        metrics["failed_examples"] = data.summary.failed;
       if (data.summary.total && data.summary.passed && data.summary.total > 0) {
         metrics["pass_rate"] = data.summary.passed / data.summary.total;
         metrics["fail_rate"] = 1 - metrics["pass_rate"];
@@ -99,7 +107,8 @@ export class OpenEvalsAdapter implements EvalAdapter {
 
     if (data.results && data.results.length > 0) {
       const scoreAggs: Record<string, number[]> = {};
-      let passed = 0, failed = 0;
+      let passed = 0,
+        failed = 0;
 
       for (const result of data.results) {
         if (result.passed === true) passed++;

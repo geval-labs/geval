@@ -76,12 +76,8 @@ function percentile(values: number[], p: number): number {
  * - Boolean: true is pass
  * - String: "success", "pass", "passed", "true", "1" are pass
  */
-function passRate(
-  values: (string | number | boolean | null | undefined)[]
-): number {
-  const validValues = values.filter(
-    (v) => v !== null && v !== undefined && v !== ""
-  );
+function passRate(values: (string | number | boolean | null | undefined)[]): number {
+  const validValues = values.filter((v) => v !== null && v !== undefined && v !== "");
   if (validValues.length === 0) return 0;
 
   const passCount = validValues.filter(isPass).length;
@@ -97,9 +93,7 @@ function isPass(value: string | number | boolean | null | undefined): boolean {
   if (typeof value === "number") return value > 0;
   if (typeof value === "string") {
     const lower = value.toLowerCase().trim();
-    return ["success", "pass", "passed", "true", "1", "yes", "ok"].includes(
-      lower
-    );
+    return ["success", "pass", "passed", "true", "1", "yes", "ok"].includes(lower);
   }
   return false;
 }
@@ -107,9 +101,7 @@ function isPass(value: string | number | boolean | null | undefined): boolean {
 /**
  * Convert value to number
  */
-function toNumber(
-  value: string | number | boolean | null | undefined
-): number | null {
+function toNumber(value: string | number | boolean | null | undefined): number | null {
   if (value === null || value === undefined) return null;
   if (typeof value === "number") return value;
   if (typeof value === "boolean") return value ? 1 : 0;

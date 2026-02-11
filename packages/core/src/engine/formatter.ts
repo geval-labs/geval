@@ -32,10 +32,7 @@ const colors = {
  * @param options - Formatting options
  * @returns Formatted string
  */
-export function formatDecision(
-  decision: Decision,
-  options: FormatOptions = {}
-): string {
+export function formatDecision(decision: Decision, options: FormatOptions = {}): string {
   const { colors: useColors = true, timestamps = false, verbose = false } = options;
   const lines: string[] = [];
 
@@ -162,13 +159,9 @@ function getStatusIcon(status: string, useColors: boolean): string {
 function getStatusText(status: string, useColors: boolean): string {
   switch (status) {
     case "PASS":
-      return useColors
-        ? `${colors.green}${colors.bold}PASS${colors.reset}`
-        : "PASS";
+      return useColors ? `${colors.green}${colors.bold}PASS${colors.reset}` : "PASS";
     case "BLOCK":
-      return useColors
-        ? `${colors.red}${colors.bold}BLOCK${colors.reset}`
-        : "BLOCK";
+      return useColors ? `${colors.red}${colors.bold}BLOCK${colors.reset}` : "BLOCK";
     case "REQUIRES_APPROVAL":
       return useColors
         ? `${colors.yellow}${colors.bold}REQUIRES APPROVAL${colors.reset}`
@@ -182,9 +175,7 @@ function getStatusText(status: string, useColors: boolean): string {
  * Format a label
  */
 function formatLabel(label: string, useColors: boolean): string {
-  const formatted = useColors
-    ? `${colors.gray}${label}:${colors.reset} `
-    : `${label}: `;
+  const formatted = useColors ? `${colors.gray}${label}:${colors.reset} ` : `${label}: `;
   return formatted.padEnd(useColors ? 22 : 12);
 }
 
@@ -192,7 +183,5 @@ function formatLabel(label: string, useColors: boolean): string {
  * Format a section header
  */
 function formatSectionHeader(title: string, useColors: boolean): string {
-  return useColors
-    ? `${colors.bold}${title}${colors.reset}`
-    : `--- ${title} ---`;
+  return useColors ? `${colors.bold}${title}${colors.reset}` : `--- ${title} ---`;
 }

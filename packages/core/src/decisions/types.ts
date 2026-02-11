@@ -35,11 +35,13 @@ export const DecisionRecordSchema = z.object({
   /** Reason for decision */
   reason: z.string().optional(),
   /** Input hashes for reproducibility */
-  inputs: z.object({
-    eval_hash: z.string().optional(),
-    signals_hash: z.string().optional(),
-    policy_hash: z.string().optional(),
-  }).optional(),
+  inputs: z
+    .object({
+      eval_hash: z.string().optional(),
+      signals_hash: z.string().optional(),
+      policy_hash: z.string().optional(),
+    })
+    .optional(),
   /** Evidence files referenced */
   evidence: z.array(z.string()).optional(),
   /** Timestamp */

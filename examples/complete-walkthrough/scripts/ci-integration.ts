@@ -1,6 +1,6 @@
 /**
  * Example: Full CI Integration
- * 
+ *
  * This demonstrates a complete CI workflow:
  * 1. Load contract
  * 2. Parse eval results (JSON or CSV)
@@ -33,13 +33,11 @@ const config = {
 
 async function main() {
   console.log("🚀 Geval CI Integration\n");
-  console.log("=" .repeat(60) + "\n");
+  console.log("=".repeat(60) + "\n");
 
   // Step 1: Load contract
   console.log("📄 Step 1: Loading contract...");
-  const contract = parseContractFromYaml(
-    readFileSync(config.contractPath, "utf-8")
-  );
+  const contract = parseContractFromYaml(readFileSync(config.contractPath, "utf-8"));
   console.log(`   Contract: ${contract.name}`);
   console.log(`   Version: ${contract.version}`);
   console.log(`   Environment: ${contract.environment}\n`);
@@ -91,7 +89,7 @@ async function main() {
   });
 
   // Step 5: Output result
-  console.log("\n" + "=" .repeat(60));
+  console.log("\n" + "=".repeat(60));
   console.log("📋 DECISION\n");
 
   if (config.outputFormat === "json") {
@@ -100,7 +98,7 @@ async function main() {
     console.log(formatDecision(decision, { colors: true, verbose: true }));
   }
 
-  console.log("=" .repeat(60) + "\n");
+  console.log("=".repeat(60) + "\n");
 
   // Step 6: Generate CI-friendly output
   outputCIResults(decision);
@@ -114,14 +112,8 @@ async function main() {
 function outputCIResults(decision: Decision) {
   // GitHub Actions output
   if (process.env.GITHUB_OUTPUT) {
-    appendFileSync(
-      process.env.GITHUB_OUTPUT,
-      `status=${decision.status}\n`
-    );
-    appendFileSync(
-      process.env.GITHUB_OUTPUT,
-      `summary=${decision.summary}\n`
-    );
+    appendFileSync(process.env.GITHUB_OUTPUT, `status=${decision.status}\n`);
+    appendFileSync(process.env.GITHUB_OUTPUT, `summary=${decision.summary}\n`);
   }
 
   // GitLab CI output

@@ -10,13 +10,17 @@ const PromptfooResultSchema = z.object({
   results: z.array(
     z.object({
       provider: z.string().optional(),
-      prompt: z.object({
-        raw: z.string().optional(),
-        label: z.string().optional(),
-      }).optional(),
-      response: z.object({
-        output: z.string().optional(),
-      }).optional(),
+      prompt: z
+        .object({
+          raw: z.string().optional(),
+          label: z.string().optional(),
+        })
+        .optional(),
+      response: z
+        .object({
+          output: z.string().optional(),
+        })
+        .optional(),
       success: z.boolean(),
       score: z.number().optional(),
       namedScores: z.record(z.number()).optional(),
@@ -24,15 +28,19 @@ const PromptfooResultSchema = z.object({
       cost: z.number().optional(),
     })
   ),
-  stats: z.object({
-    successes: z.number(),
-    failures: z.number(),
-    tokenUsage: z.object({
-      total: z.number().optional(),
-      prompt: z.number().optional(),
-      completion: z.number().optional(),
-    }).optional(),
-  }).optional(),
+  stats: z
+    .object({
+      successes: z.number(),
+      failures: z.number(),
+      tokenUsage: z
+        .object({
+          total: z.number().optional(),
+          prompt: z.number().optional(),
+          completion: z.number().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
   timestamp: z.string().optional(),
 });
 

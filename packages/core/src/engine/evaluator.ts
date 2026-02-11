@@ -22,7 +22,7 @@ import { evaluatePolicy } from "./policy-evaluator.js";
  */
 export function evaluate(input: EngineInput): Decision {
   const { contract, evalResults, baselines, signals, environment } = input;
-  
+
   // If contract has policy, use policy evaluator
   if (contract.policy) {
     return evaluatePolicy({
@@ -32,12 +32,12 @@ export function evaluate(input: EngineInput): Decision {
       environment: environment || contract.environment || "production",
     });
   }
-  
+
   // Legacy eval-based contract
   if (!contract.requiredEvals || contract.requiredEvals.length === 0) {
     throw new Error("Contract must have either 'requiredEvals' or 'policy'");
   }
-  
+
   const violations: Violation[] = [];
   const timestamp = new Date().toISOString();
 
@@ -72,12 +72,7 @@ export function evaluate(input: EngineInput): Decision {
 
     // Evaluate each rule
     for (const rule of requiredEval.rules) {
-      const violation = evaluateRule(
-        rule,
-        requiredEval.name,
-        evalResult,
-        baseline
-      );
+      const violation = evaluateRule(rule, requiredEval.name, evalResult, baseline);
       if (violation) {
         violations.push(violation);
       }
@@ -274,10 +269,7 @@ export function compareValues(
 /**
  * Compute the delta between two values
  */
-function computeDelta(
-  actual: MetricValue,
-  baseline: MetricValue
-): number | undefined {
+function computeDelta(actual: MetricValue, baseline: MetricValue): number | undefined {
   if (typeof actual === "number" && typeof baseline === "number") {
     return actual - baseline;
   }
@@ -322,10 +314,7 @@ function buildViolationSummary(
         : "Warning";
 
   const uniqueEvals = new Set(violations.map((v) => v.evalName));
-  const evalText =
-    uniqueEvals.size === 1
-      ? `1 eval`
-      : `${uniqueEvals.size} evals`;
+  const evalText = uniqueEvals.size === 1 ? `1 eval` : `${uniqueEvals.size} evals`;
 
   return `${actionText}: ${violations.length} violation(s) in ${evalText}`;
 }

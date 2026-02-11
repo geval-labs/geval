@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Example 2: Safety and Compliance Monitoring
- * 
+ *
  * This example demonstrates:
  * 1. Loading a safety/compliance contract
  * 2. Parsing safety eval results from JSON and CSV
@@ -27,19 +27,18 @@ const exampleDir = __dirname;
 
 async function main() {
   console.log("🛡️  Example 2: Safety and Compliance Monitoring\n");
-  console.log("=" .repeat(60) + "\n");
+  console.log("=".repeat(60) + "\n");
 
   // Step 1: Load the contract
   console.log("📄 Step 1: Loading safety contract...");
-  const contractYaml = readFileSync(
-    join(exampleDir, "contract.yaml"),
-    "utf-8"
-  );
+  const contractYaml = readFileSync(join(exampleDir, "contract.yaml"), "utf-8");
   const contract = parseContractFromYaml(contractYaml);
   console.log(`   Contract: ${contract.name}`);
   console.log(`   Environment: ${contract.environment}`);
   console.log(`   Compliance: ${contract.metadata?.compliance_standard || "N/A"}`);
-  console.log(`   Required evals: ${contract.requiredEvals.map((e) => e.name).join(", ")}\n`);
+  console.log(
+    `   Required evals: ${contract.requiredEvals.map((e) => e.name).join(", ")}\n`
+  );
 
   // Step 2: Test with passing JSON results
   console.log("📊 Step 2: Testing with passing safety results...");
@@ -47,12 +46,8 @@ async function main() {
     join(exampleDir, "eval-results/passing.json"),
     "utf-8"
   );
-  const passingResult = parseEvalFile(
-    passingJson,
-    "eval-results/passing.json",
-    contract
-  );
-  
+  const passingResult = parseEvalFile(passingJson, "eval-results/passing.json", contract);
+
   console.log(`   Eval: ${passingResult.evalName}`);
   console.log(`   Run ID: ${passingResult.runId}`);
   console.log("   Metrics:");
@@ -82,11 +77,7 @@ async function main() {
     join(exampleDir, "eval-results/failing.json"),
     "utf-8"
   );
-  const failingResult = parseEvalFile(
-    failingJson,
-    "eval-results/failing.json",
-    contract
-  );
+  const failingResult = parseEvalFile(failingJson, "eval-results/failing.json", contract);
 
   console.log(`   Eval: ${failingResult.evalName}`);
   console.log(`   Run ID: ${failingResult.runId}`);
@@ -162,15 +153,17 @@ async function main() {
     console.log("   Key metric changes:");
     for (const metricDiff of firstDiff.metrics.slice(0, 5)) {
       // Use delta if available, otherwise calculate it
-      const change = metricDiff.delta !== undefined
-        ? metricDiff.delta
-        : (metricDiff.current !== undefined && metricDiff.previous !== undefined
-          ? (metricDiff.current as number) - (metricDiff.previous as number)
-          : null);
-      const changeStr = change !== null 
-        ? ` (${change > 0 ? '+' : ''}${change.toFixed(4)})`
-        : '';
-      console.log(`     ${metricDiff.metric}: ${metricDiff.previous ?? 'N/A'} → ${metricDiff.current ?? 'N/A'}${changeStr}`);
+      const change =
+        metricDiff.delta !== undefined
+          ? metricDiff.delta
+          : metricDiff.current !== undefined && metricDiff.previous !== undefined
+            ? (metricDiff.current as number) - (metricDiff.previous as number)
+            : null;
+      const changeStr =
+        change !== null ? ` (${change > 0 ? "+" : ""}${change.toFixed(4)})` : "";
+      console.log(
+        `     ${metricDiff.metric}: ${metricDiff.previous ?? "N/A"} → ${metricDiff.current ?? "N/A"}${changeStr}`
+      );
     }
     console.log();
   }
@@ -192,7 +185,7 @@ async function main() {
   console.log(formatDecision(decisionWithBaseline, { colors: true, verbose: true }));
   console.log();
 
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
   console.log("✅ Example 2 completed successfully!");
 }
 

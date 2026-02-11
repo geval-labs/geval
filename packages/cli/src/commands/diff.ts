@@ -89,30 +89,20 @@ function formatAndPrintDiff(
   const parts: string[] = [];
   if (stats.regressed > 0) {
     parts.push(
-      useColor
-        ? pc.red(`${stats.regressed} regressed`)
-        : `${stats.regressed} regressed`
+      useColor ? pc.red(`${stats.regressed} regressed`) : `${stats.regressed} regressed`
     );
   }
   if (stats.improved > 0) {
     parts.push(
-      useColor
-        ? pc.green(`${stats.improved} improved`)
-        : `${stats.improved} improved`
+      useColor ? pc.green(`${stats.improved} improved`) : `${stats.improved} improved`
     );
   }
   if (stats.new > 0) {
-    parts.push(
-      useColor
-        ? pc.yellow(`${stats.new} new`)
-        : `${stats.new} new`
-    );
+    parts.push(useColor ? pc.yellow(`${stats.new} new`) : `${stats.new} new`);
   }
   if (stats.unchanged > 0) {
     parts.push(
-      useColor
-        ? pc.gray(`${stats.unchanged} unchanged`)
-        : `${stats.unchanged} unchanged`
+      useColor ? pc.gray(`${stats.unchanged} unchanged`) : `${stats.unchanged} unchanged`
     );
   }
 
@@ -126,18 +116,14 @@ function formatAndPrintDiff(
     for (const metricDiff of evalDiff.metrics) {
       const icon = getDirectionIcon(metricDiff.direction, useColor);
       const prev =
-        metricDiff.previous !== undefined
-          ? String(metricDiff.previous)
-          : "N/A";
+        metricDiff.previous !== undefined ? String(metricDiff.previous) : "N/A";
       const curr = String(metricDiff.current);
       const deltaStr =
         metricDiff.delta !== undefined
           ? ` (${metricDiff.delta > 0 ? "+" : ""}${metricDiff.delta.toFixed(4)})`
           : "";
 
-      console.log(
-        `  ${icon} ${metricDiff.metric}: ${prev} → ${curr}${deltaStr}`
-      );
+      console.log(`  ${icon} ${metricDiff.metric}: ${prev} → ${curr}${deltaStr}`);
     }
     console.log("");
   }
@@ -167,8 +153,7 @@ function handleError(
   json: boolean | undefined,
   useColor: boolean
 ): never {
-  const message =
-    error instanceof Error ? error.message : "An unknown error occurred";
+  const message = error instanceof Error ? error.message : "An unknown error occurred";
 
   if (json) {
     console.error(
@@ -178,9 +163,7 @@ function handleError(
       })
     );
   } else {
-    console.error(
-      useColor ? pc.red(`Error: ${message}`) : `Error: ${message}`
-    );
+    console.error(useColor ? pc.red(`Error: ${message}`) : `Error: ${message}`);
   }
 
   process.exit(3);

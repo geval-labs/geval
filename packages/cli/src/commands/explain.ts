@@ -127,11 +127,11 @@ function loadEvalResults(
     if (fileType === "csv" || fileType === "jsonl") {
       // Use contract source config for CSV/JSONL files
       const sourceConfig = contract.sources?.[fileType];
-      
+
       if (!sourceConfig) {
         throw new Error(
           `CSV/JSONL files require a source config in the contract. ` +
-          `Add a "sources.${fileType}" section to define how to parse metrics.`
+            `Add a "sources.${fileType}" section to define how to parse metrics.`
         );
       }
 
@@ -151,7 +151,7 @@ function loadEvalResults(
           const parseResult = adapterName
             ? (item: unknown) => parseWithAdapter(item, adapterName)
             : parseEvalResult;
-          
+
           if (Array.isArray(data)) {
             for (const item of data) {
               results.push(parseResult(item));
@@ -240,7 +240,9 @@ function printExplanation(
 
   // Header
   console.log(
-    useColor ? pc.bold("\n📋 Contract Evaluation Explanation\n") : "\nContract Evaluation Explanation\n"
+    useColor
+      ? pc.bold("\n📋 Contract Evaluation Explanation\n")
+      : "\nContract Evaluation Explanation\n"
   );
 
   // Contract summary
@@ -252,7 +254,9 @@ function printExplanation(
     const envPolicy = contract.policy.environments?.[environment];
     const globalRules = contract.policy.rules || [];
     const envRules = envPolicy?.rules || [];
-    console.log(`  Rules: ${globalRules.length + envRules.length} (${globalRules.length} global, ${envRules.length} environment-specific)`);
+    console.log(
+      `  Rules: ${globalRules.length + envRules.length} (${globalRules.length} global, ${envRules.length} environment-specific)`
+    );
   } else if (contract.requiredEvals) {
     console.log(`  Type: Eval-based (legacy)`);
     console.log(`  Required Evals: ${contract.requiredEvals.length}`);
@@ -312,9 +316,7 @@ function printExplanation(
   // Rule-by-rule explanation
   if (verbose) {
     console.log("");
-    console.log(
-      useColor ? pc.bold("Rule-by-Rule Analysis:") : "Rule-by-Rule Analysis:"
-    );
+    console.log(useColor ? pc.bold("Rule-by-Rule Analysis:") : "Rule-by-Rule Analysis:");
     console.log("");
 
     // Policy-based contracts
@@ -329,32 +331,42 @@ function printExplanation(
         for (let i = 0; i < allRules.length; i++) {
           const rule = allRules[i]!;
           const isMatched = decision.status !== "PASS" || i === 0; // Simplified check
-          
-          const status = isMatched && decision.status !== "PASS"
-            ? useColor ? pc.red("✗ MATCHED") : "✗ MATCHED"
-            : useColor ? pc.gray("○ NOT MATCHED") : "○ NOT MATCHED";
+
+          const status =
+            isMatched && decision.status !== "PASS"
+              ? useColor
+                ? pc.red("✗ MATCHED")
+                : "✗ MATCHED"
+              : useColor
+                ? pc.gray("○ NOT MATCHED")
+                : "○ NOT MATCHED";
 
           console.log(`    ${status} Rule ${i + 1}:`);
-          
+
           if ("eval" in rule.when) {
-            console.log(`      Condition: eval.${rule.when.eval.metric} ${rule.when.eval.operator} ${rule.when.eval.threshold ?? "N/A"}`);
-            const evalResult = evalResults.find((r) => 
-              r.metrics[rule.when.eval.metric] !== undefined
+            console.log(
+              `      Condition: eval.${rule.when.eval.metric} ${rule.when.eval.operator} ${rule.when.eval.threshold ?? "N/A"}`
+            );
+            const evalResult = evalResults.find(
+              (r) => r.metrics[rule.when.eval.metric] !== undefined
             );
             if (evalResult) {
               console.log(`      Actual: ${evalResult.metrics[rule.when.eval.metric]}`);
             }
           } else if ("signal" in rule.when) {
-            console.log(`      Condition: signal${rule.when.signal.type ? `.type=${rule.when.signal.type}` : ""}${rule.when.signal.name ? `.name=${rule.when.signal.name}` : ""}`);
-            const matchingSignal = signals.find((s) => 
-              (!rule.when.signal.type || s.type === rule.when.signal.type) &&
-              (!rule.when.signal.name || s.name === rule.when.signal.name)
+            console.log(
+              `      Condition: signal${rule.when.signal.type ? `.type=${rule.when.signal.type}` : ""}${rule.when.signal.name ? `.name=${rule.when.signal.name}` : ""}`
+            );
+            const matchingSignal = signals.find(
+              (s) =>
+                (!rule.when.signal.type || s.type === rule.when.signal.type) &&
+                (!rule.when.signal.name || s.name === rule.when.signal.name)
             );
             if (matchingSignal) {
               console.log(`      Found: ${matchingSignal.name}`);
             }
           }
-          
+
           console.log(`      Action: ${rule.then.action}`);
           if (rule.then.reason) {
             console.log(`      Reason: ${rule.then.reason}`);
@@ -385,8 +397,7 @@ function printExplanation(
           const violation =
             decision.status !== "PASS" && "violations" in decision
               ? decision.violations.find(
-                  (v) =>
-                    v.evalName === reqEval.name && v.rule.metric === rule.metric
+                  (v) => v.evalName === reqEval.name && v.rule.metric === rule.metric
                 )
               : undefined;
 
@@ -427,12 +438,9 @@ function printExplanation(
  * Handle errors consistently
  */
 function handleError(error: unknown, useColor: boolean): never {
-  const message =
-    error instanceof Error ? error.message : "An unknown error occurred";
+  const message = error instanceof Error ? error.message : "An unknown error occurred";
 
-  console.error(
-    useColor ? pc.red(`Error: ${message}`) : `Error: ${message}`
-  );
+  console.error(useColor ? pc.red(`Error: ${message}`) : `Error: ${message}`);
 
   process.exit(3);
 }

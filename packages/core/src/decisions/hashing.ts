@@ -13,9 +13,7 @@ export function hashString(content: string): string {
 /**
  * Compute hash of eval results
  */
-export function hashEvalResults(
-  results: NormalizedEvalResult[]
-): string {
+export function hashEvalResults(results: NormalizedEvalResult[]): string {
   const content = JSON.stringify(results, null, 0);
   return hashString(content);
 }
@@ -49,9 +47,7 @@ export function hashDecisionInputs(inputs: {
   policy_hash: string;
 } {
   return {
-    eval_hash: inputs.evalResults
-      ? hashEvalResults(inputs.evalResults)
-      : undefined,
+    eval_hash: inputs.evalResults ? hashEvalResults(inputs.evalResults) : undefined,
     signals_hash: inputs.signals ? hashSignals(inputs.signals) : undefined,
     policy_hash: hashContract(inputs.contract),
   };

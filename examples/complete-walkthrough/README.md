@@ -78,6 +78,7 @@ npx geval check \
 ```
 
 Expected output:
+
 ```
 ✓ PASS
 
@@ -98,6 +99,7 @@ npx geval check \
 ```
 
 Geval automatically:
+
 1. Detects the `.csv` extension
 2. Uses the `sources.csv` config from the contract
 3. Aggregates metrics using the specified methods
@@ -112,6 +114,7 @@ npx geval check \
 ```
 
 Expected output:
+
 ```
 ✗ BLOCK
 
@@ -152,10 +155,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Run your evals
-        run: npm run evals  # Outputs CSV or JSON
-      
+        run: npm run evals # Outputs CSV or JSON
+
       - name: Enforce quality gate
         run: |
           npm install -g @geval-labs/cli
@@ -182,18 +185,18 @@ npx ts-node scripts/ci-integration.ts
 
 ## Aggregation Methods Available
 
-| Method | Description |
-|--------|-------------|
-| `avg` | Average of all values (default) |
-| `sum` | Sum of all values |
-| `min` | Minimum value |
-| `max` | Maximum value |
-| `count` | Count of non-null values |
-| `p50` | 50th percentile (median) |
-| `p90` | 90th percentile |
-| `p95` | 95th percentile |
-| `p99` | 99th percentile |
+| Method      | Description                         |
+| ----------- | ----------------------------------- |
+| `avg`       | Average of all values (default)     |
+| `sum`       | Sum of all values                   |
+| `min`       | Minimum value                       |
+| `max`       | Maximum value                       |
+| `count`     | Count of non-null values            |
+| `p50`       | 50th percentile (median)            |
+| `p90`       | 90th percentile                     |
+| `p95`       | 95th percentile                     |
+| `p99`       | 99th percentile                     |
 | `pass_rate` | % of "success"/"pass"/true/1 values |
-| `fail_rate` | % of "error"/"fail"/false/0 values |
-| `first` | First value |
-| `last` | Last value |
+| `fail_rate` | % of "error"/"fail"/false/0 values  |
+| `first`     | First value                         |
+| `last`      | Last value                          |

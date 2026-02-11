@@ -26,9 +26,7 @@ export function parseCsv(
 
   // Parse header row
   const headerLine = hasHeader ? lines[0] : null;
-  const headers = headerLine
-    ? parseCsvLine(headerLine, delimiter, quote)
-    : [];
+  const headers = headerLine ? parseCsvLine(headerLine, delimiter, quote) : [];
 
   // Generate numeric headers if no header row
   if (!hasHeader && lines.length > 0) {
@@ -103,11 +101,7 @@ function splitCsvLines(content: string, quote: string): string[] {
 /**
  * Parse a single CSV line into values
  */
-function parseCsvLine(
-  line: string,
-  delimiter: string,
-  quote: string
-): string[] {
+function parseCsvLine(line: string, delimiter: string, quote: string): string[] {
   const values: string[] = [];
   let currentValue = "";
   let inQuotes = false;

@@ -1,6 +1,6 @@
 /**
  * Example: Parsing CSV eval results and running Geval check
- * 
+ *
  * This demonstrates:
  * 1. Loading a CSV file (e.g., from LangSmith)
  * 2. Defining how to extract metrics
@@ -49,7 +49,11 @@ const sourceConfig: EvalSourceConfig = {
     // (true = hallucination = bad, so we use fail_rate conceptually)
     // But since the column has true/false, pass_rate will count "true" as pass
     // So hallucination_rate = pass_rate of hallucination_detected column
-    { column: "hallucination_detected", aggregate: "pass_rate", as: "hallucination_rate" },
+    {
+      column: "hallucination_detected",
+      aggregate: "pass_rate",
+      as: "hallucination_rate",
+    },
   ],
   evalName: { fixed: "quality-metrics" },
 };
@@ -74,9 +78,9 @@ const decision = evaluate({
 });
 
 // Step 4: Display the result
-console.log("=" .repeat(60));
+console.log("=".repeat(60));
 console.log(formatDecision(decision, { colors: true, verbose: true }));
-console.log("=" .repeat(60));
+console.log("=".repeat(60));
 
 // Step 5: Exit with appropriate code
 console.log(`\nExit code: ${decision.status === "PASS" ? 0 : 1}`);
