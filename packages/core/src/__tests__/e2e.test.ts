@@ -7,7 +7,6 @@ import {
   createDecisionRecord,
   formatDecisionRecord,
 } from "../index.js";
-import type { Signal } from "../signals/types.js";
 
 describe("E2E: Full Decision Flow", () => {
   describe("Policy-based contract with signals", () => {
