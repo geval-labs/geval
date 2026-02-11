@@ -181,8 +181,14 @@ function evaluateSignalCondition(
     // If operator and value are specified, compare
     if (condition.operator && condition.value !== undefined) {
       // Convert both to comparable types if needed
-      let actualValue: string | number | boolean = signalValue as string | number | boolean;
-      let expectedValue: string | number | boolean = condition.value as string | number | boolean;
+      let actualValue: string | number | boolean = signalValue as
+        | string
+        | number
+        | boolean;
+      let expectedValue: string | number | boolean = condition.value as
+        | string
+        | number
+        | boolean;
 
       // If both are strings, compare as strings
       // If one is string and other is not, try to convert
