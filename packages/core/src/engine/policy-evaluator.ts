@@ -117,7 +117,7 @@ function evaluateEvalCondition(
       continue;
     }
 
-    // Handle fixed baseline (absolute threshold)
+    // here handle fixed baseline absolute threshold
     if (condition.baseline === "fixed") {
       if (condition.threshold === undefined) {
         return false;
@@ -126,36 +126,30 @@ function evaluateEvalCondition(
       return compareValues(metricValue, condition.operator, condition.threshold);
     }
 
-    // Handle relative baselines (previous/main)
+    // handle relative baselines previous/main
     const baseline = baselines[result.evalName];
 
-    // No baseline available - first run scenario
     if (!baseline) {
       return true;
     }
 
     const baselineValue = baseline.metrics[condition.metric];
 
-    // Metric doesn't exist in baseline
     if (baselineValue === undefined) {
       return true;
     }
 
-    // Compute delta if both values are numeric
+    // compute delta if numeric
     const delta = computeDelta(metricValue, baselineValue);
 
-    // Handle maxDelta logic if specified
     if (condition.maxDelta !== undefined && delta !== undefined) {
-      // If change is within tolerance (delta <= maxDelta), condition is met (OK)
       if (Math.abs(delta) <= condition.maxDelta) {
         return true;
       }
 
-      // Change exceeds tolerance - use comparison operator to determine condition
       return compareValues(metricValue, condition.operator, baselineValue);
     }
 
-    // No maxDelta specified - just use comparison operator
     return compareValues(metricValue, condition.operator, baselineValue);
   }
 
@@ -163,13 +157,7 @@ function evaluateEvalCondition(
   return false;
 }
 
-/**
- * Compute the delta between two metric values
- *
- * @param actual - Current metric value
- * @param baseline - Baseline metric value
- * @returns Delta (actual - baseline) if both are numeric, undefined otherwise
- */
+// compute the delta 
 function computeDelta(actual: MetricValue, baseline: MetricValue): number | undefined {
   if (typeof actual === "number" && typeof baseline === "number") {
     return actual - baseline;
@@ -177,9 +165,7 @@ function computeDelta(actual: MetricValue, baseline: MetricValue): number | unde
   return undefined;
 }
 
-/**
- * Evaluate a signal-based condition
- */
+// evaluate a signal-based condition
 function evaluateSignalCondition(
   condition: {
     type?: string;
