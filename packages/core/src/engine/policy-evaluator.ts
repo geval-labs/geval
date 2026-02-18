@@ -1,4 +1,10 @@
-import type { Decision, DecisionStatus, NormalizedEvalResult } from "../types/index.js";
+import type {
+  Decision,
+  DecisionStatus,
+  NormalizedEvalResult,
+  BaselineData,
+  MetricValue,
+} from "../types/index.js";
 import type { Signal } from "../signals/types.js";
 import type {
   PolicyRule,
@@ -23,8 +29,9 @@ export function evaluatePolicy(input: {
   evalResults: NormalizedEvalResult[];
   signals: Signal[];
   environment: string;
+  baselines: Record<string, BaselineData>;
 }): Decision {
-  const { contract, evalResults, signals, environment } = input;
+  const { contract, evalResults, signals, environment, baselines } = input;
   const timestamp = new Date().toISOString();
 
   // Get environment-specific policy or use global
@@ -38,7 +45,7 @@ export function evaluatePolicy(input: {
   let finalReason: string | undefined;
 
   for (const rule of allRules) {
-    if (evaluateCondition(rule.when, evalResults, signals)) {
+    if (evaluateCondition(rule.when, evalResults, signals, baselines)) {
       finalAction = rule.then.action;
       finalReason = rule.then.reason;
       break; // First matching rule wins
@@ -75,10 +82,11 @@ export function evaluatePolicy(input: {
 function evaluateCondition(
   condition: PolicyCondition,
   evalResults: NormalizedEvalResult[],
-  signals: Signal[]
+  signals: Signal[],
+  baselines: Record<string, BaselineData>
 ): boolean {
   if ("eval" in condition) {
-    return evaluateEvalCondition(condition.eval, evalResults);
+    return evaluateEvalCondition(condition.eval, evalResults, baselines);
   }
 
   if ("signal" in condition) {
@@ -99,7 +107,8 @@ function evaluateEvalCondition(
     threshold?: number;
     maxDelta?: number;
   },
-  evalResults: NormalizedEvalResult[]
+  evalResults: NormalizedEvalResult[],
+  baselines: Record<string, BaselineData>
 ): boolean {
   // Find the metric in eval results
   for (const result of evalResults) {
@@ -108,6 +117,7 @@ function evaluateEvalCondition(
       continue;
     }
 
+    // Handle fixed baseline (absolute threshold)
     if (condition.baseline === "fixed") {
       if (condition.threshold === undefined) {
         return false;
@@ -116,14 +126,55 @@ function evaluateEvalCondition(
       return compareValues(metricValue, condition.operator, condition.threshold);
     }
 
-    // For previous/main baselines, we'd need baseline data
-    // For now, return false if baseline is not fixed
-    // This should be enhanced to support baseline comparisons
-    return false;
+    // Handle relative baselines (previous/main)
+    const baseline = baselines[result.evalName];
+
+    // No baseline available - first run scenario
+    if (!baseline) {
+      return true;
+    }
+
+    const baselineValue = baseline.metrics[condition.metric];
+
+    // Metric doesn't exist in baseline
+    if (baselineValue === undefined) {
+      return true;
+    }
+
+    // Compute delta if both values are numeric
+    const delta = computeDelta(metricValue, baselineValue);
+
+    // Handle maxDelta logic if specified
+    if (condition.maxDelta !== undefined && delta !== undefined) {
+      // If change is within tolerance (delta <= maxDelta), condition is met (OK)
+      if (Math.abs(delta) <= condition.maxDelta) {
+        return true;
+      }
+
+      // Change exceeds tolerance - use comparison operator to determine condition
+      return compareValues(metricValue, condition.operator, baselineValue);
+    }
+
+    // No maxDelta specified - just use comparison operator
+    return compareValues(metricValue, condition.operator, baselineValue);
   }
 
   // Metric not found in any eval result
   return false;
+}
+
+/**
+ * Compute the delta between two metric values
+ *
+ * @param actual - Current metric value
+ * @param baseline - Baseline metric value
+ * @returns Delta (actual - baseline) if both are numeric, undefined otherwise
+ */
+function computeDelta(actual: MetricValue, baseline: MetricValue): number | undefined {
+  if (typeof actual === "number" && typeof baseline === "number") {
+    return actual - baseline;
+  }
+  return undefined;
 }
 
 /**
