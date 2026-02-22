@@ -157,7 +157,7 @@ function evaluateEvalCondition(
   return false;
 }
 
-// compute the delta 
+// compute the delta
 function computeDelta(actual: MetricValue, baseline: MetricValue): number | undefined {
   if (typeof actual === "number" && typeof baseline === "number") {
     return actual - baseline;
