@@ -30,6 +30,7 @@ export function evaluate(input: EngineInput): Decision {
       evalResults,
       signals: signals || [],
       environment: environment || contract.environment || "production",
+      baselines: baselines || {},
     });
   }
 
