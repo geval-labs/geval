@@ -1,0 +1,21 @@
+{
+  "signals": [
+    {
+      "system": "support_agent",
+      "component": "retrieval",
+      "metric": "context_relevance",
+      "value": 0.84
+    },
+    {
+      "system": "support_agent",
+      "component": "generator",
+      "metric": "hallucination_rate",
+      "value": 0.06
+    },
+    {
+      "type": "ab_test",
+      "metric": "engagement_drop",
+      "value": 0.03
+    }
+  ]
+}

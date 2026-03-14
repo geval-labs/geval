@@ -1,0 +1,49 @@
+# Geval Decision Check - run the Rust decision engine in CI
+# Use this workflow to evaluate signals against policy on pull requests.
+
+name: Geval Decision Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  geval:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: stable
+
+      - name: Build Geval
+        run: cargo build --release --manifest-path geval/Cargo.toml
+
+      - name: Generate signals
+        run: |
+          if [ -f geval/scripts/generate_signals.py ]; then
+            python geval/scripts/generate_signals.py > signals.json
+          else
+            cp geval/examples/signals.json signals.json
+          fi
+
+      - name: Run Geval
+        run: |
+          ./geval/target/release/geval check \
+            --signals signals.json \
+            --policy geval/examples/policy.yaml \
+            --env prod
+        continue-on-error: true
+
+      - name: Upload decision artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geval-decisions
+          path: .geval/decisions/
+          retention-days: 30
+        continue-on-error: true

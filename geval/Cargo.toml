@@ -1,0 +1,31 @@
+[package]
+name = "geval"
+version = "0.1.0"
+edition = "2021"
+description = "Decision orchestration engine for AI systems"
+license = "MIT"
+repository = "https://github.com/geval/geval"
+readme = "README.md"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+clap = { version = "4.4", features = ["derive"] }
+sha2 = "0.10"
+chrono = { version = "0.4", features = ["serde"] }
+anyhow = "1.0"
+thiserror = "1.0"
+
+[dev-dependencies]
+tempfile = "3.10"
+
+[[bin]]
+name = "geval"
+path = "src/main.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+opt-level = "z"

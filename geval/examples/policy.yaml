@@ -1,0 +1,32 @@
+policy:
+  environment: prod
+  rules:
+    - priority: 1
+      name: business_block
+      when:
+        metric: engagement_drop
+        operator: ">"
+        threshold: 0
+      then:
+        action: block
+        reason: "Business engagement dropped"
+
+    - priority: 2
+      name: hallucination_guard
+      when:
+        component: generator
+        metric: hallucination_rate
+        operator: ">"
+        threshold: 0.05
+      then:
+        action: block
+
+    - priority: 3
+      name: retrieval_quality
+      when:
+        component: retrieval
+        metric: context_relevance
+        operator: "<"
+        threshold: 0.85
+      then:
+        action: require_approval
