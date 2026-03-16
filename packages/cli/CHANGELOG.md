@@ -1,5 +1,16 @@
 # CLI Package Changelog
 
+## 1.0.0
+
+### Major Changes
+
+- 845295c: Updated few package versions
+
+### Patch Changes
+
+- Updated dependencies [845295c]
+  - @geval-labs/core@1.0.0
+
 ## Version 0.0.6
 
 ### New Features
