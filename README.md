@@ -28,9 +28,6 @@ curl -sSL https://github.com/geval-labs/geval/releases/latest/download/geval-lin
 
 # macOS (Apple Silicon)
 curl -sSL https://github.com/geval-labs/geval/releases/latest/download/geval-macos-aarch64 -o geval && chmod +x geval
-
-# macOS (Intel)
-curl -sSL https://github.com/geval-labs/geval/releases/latest/download/geval-macos-x86_64 -o geval && chmod +x geval
 ```
 
 **2. Run it** with the included example:

@@ -12,11 +12,8 @@ Geval is a **single binary**. Download it from [Releases](https://github.com/gev
 # Linux
 curl -sSL https://github.com/geval-labs/geval/releases/latest/download/geval-linux-x86_64 -o geval && chmod +x geval
 
-# macOS (Apple Silicon)
+# macOS (Apple Silicon). Intel Mac: build from source.
 curl -sSL https://github.com/geval-labs/geval/releases/latest/download/geval-macos-aarch64 -o geval && chmod +x geval
-
-# macOS (Intel)
-curl -sSL https://github.com/geval-labs/geval/releases/latest/download/geval-macos-x86_64 -o geval && chmod +x geval
 ```
 
 **2. (Optional)** Move to PATH so you can run `geval` from anywhere:
