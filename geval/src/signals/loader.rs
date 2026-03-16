@@ -1,14 +1,14 @@
 //! Load signals from JSON. Signals are declared facts; Geval does not validate or compute them.
 
 use anyhow::{Context, Result};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
 /// A single signal - evidence used to evaluate an AI system change.
 /// All context fields are optional to support simple and complex systems.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Signal {
     #[serde(default)]
     pub system: Option<String>,

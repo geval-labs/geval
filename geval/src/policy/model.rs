@@ -1,9 +1,9 @@
 //! Policy model: rules with priority, when (condition), then (consequence).
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// Decision action produced by a rule.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Action {
     #[serde(alias = "pass")]
@@ -15,12 +15,18 @@ pub enum Action {
 }
 
 /// Comparison operator for threshold rules.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Operator {
+    #[serde(rename = ">")]
     GreaterThan,
+    #[serde(rename = "<")]
     LessThan,
+    #[serde(rename = ">=")]
     GreaterOrEqual,
+    #[serde(rename = "<=")]
     LessOrEqual,
+    #[serde(rename = "==")]
     Equal,
     Presence,
 }
@@ -46,7 +52,7 @@ impl<'de> serde::Deserialize<'de> for Operator {
 
 /// Condition for when a rule applies. All fields optional for flexibility;
 /// at least metric (and usually operator + threshold) are set for threshold rules.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RuleCondition {
     #[serde(default)]
     pub system: Option<String>,
@@ -65,7 +71,7 @@ pub struct RuleCondition {
 }
 
 /// Consequence when a rule matches.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RuleConsequence {
     pub action: Action,
     #[serde(default)]
@@ -73,7 +79,7 @@ pub struct RuleConsequence {
 }
 
 /// A single policy rule: priority (lower = evaluated first), name, when, then.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Rule {
     pub priority: u32,
     pub name: String,
@@ -82,7 +88,7 @@ pub struct Rule {
 }
 
 /// Top-level policy: environment and ordered rules.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Policy {
     #[serde(default)]
     pub environment: Option<String>,

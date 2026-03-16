@@ -152,9 +152,7 @@ fn run_reject(opts: &RejectOpts) -> Result<()> {
         .or_else(|| std::env::var("USER").ok())
         .unwrap_or_else(|| "user".to_string());
     write_approval(&opts.output, by, opts.reason.clone(), false)?;
-    if !opts.json {
-        println!("Rejection recorded to {}", opts.output.display());
-    }
+    println!("Rejection recorded to {}", opts.output.display());
     Ok(())
 }
 

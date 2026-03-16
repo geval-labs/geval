@@ -7,7 +7,7 @@ use std::fmt::Write;
 
 /// Produce a text report suitable for CLI output.
 pub fn explain_decision(
-    policy: &Policy,
+    _policy: &Policy,
     graph: &SignalGraph,
     decision: &Decision,
     environment: Option<&str>,

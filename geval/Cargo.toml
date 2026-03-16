@@ -11,7 +11,7 @@ readme = "README.md"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.9"
-clap = { version = "4.4", features = ["derive"] }
+clap = { version = "4.4", features = ["derive", "env"] }
 sha2 = "0.10"
 chrono = { version = "0.4", features = ["serde"] }
 anyhow = "1.0"
