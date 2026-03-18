@@ -1,0 +1,32 @@
+{
+  "artifact_version": "2",
+  "geval_version": "0.1.2",
+  "contract_name": "release-gate",
+  "contract_version": "1.0.0",
+  "contract_hash": "c969102e3d85f861eef2f28c19d619775275adb1830bafb16276e93b9f032a4d",
+  "signals_name": "my-signals",
+  "signals_version": "1.0.0",
+  "signals_hash": "77b6fe14da32a7a2262580067ef84258acd839643b8c7e758f4348008307519e",
+  "combine_rule": "all_pass",
+  "policy_results": [
+    {
+      "policy_path": "policies/security.yaml",
+      "policy_name": "security",
+      "policy_version": "1.0.0",
+      "policy_hash": "78cdf683db7d3a416717d1fb9627075f47c6a9154eadda0b237d5d0eb9248347",
+      "outcome": "PASS"
+    },
+    {
+      "policy_path": "policies/quality.yaml",
+      "policy_name": "quality",
+      "policy_version": "1.0.0",
+      "policy_hash": "8bf934d103cdcbd4a81cdc1bdddf20cb7114c030be70ea1b1ba3ea39188358c9",
+      "outcome": "BLOCK",
+      "matched_rule": "block_engagement_drop"
+    }
+  ],
+  "combined_decision": "BLOCK",
+  "combined_matched_rule": "policies/quality.yaml:block_engagement_drop",
+  "timestamp": "2026-03-18T18:53:33Z",
+  "approval": null
+}

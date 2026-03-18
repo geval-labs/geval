@@ -1,11 +1,57 @@
 //! Human-readable explanation of the decision (GEVAL DECISION REPORT).
 
+use crate::contract::ContractResult;
 use crate::evaluator::{Decision, DecisionOutcome};
 use crate::policy::Policy;
 use crate::signal_graph::SignalGraph;
 use std::fmt::Write;
 
-/// Produce a text report suitable for CLI output.
+/// Produce a contract-level report: contract name/version, signals, per-policy results, combined decision.
+pub fn explain_contract_result(
+    result: &ContractResult,
+    graph: &SignalGraph,
+    _environment: Option<&str>,
+) -> String {
+    let mut out = String::new();
+    out.push_str("GEVAL DECISION REPORT (CONTRACT)\n");
+    out.push_str("--------------------------------\n");
+    let _ = writeln!(out, "Contract: {} @ {}", result.contract_name, result.contract_version);
+    let _ = writeln!(out, "Combine rule: {}", result.combine_rule);
+    out.push_str("\nSignals:\n");
+    for s in &graph.signals {
+        let label = signal_label(s);
+        let value_str = value_str(s);
+        let _ = writeln!(out, "  {} = {}", label, value_str);
+    }
+    out.push_str("\nPer-policy results:\n");
+    for r in &result.policy_results {
+        let match_info = r
+            .matched_rule
+            .as_ref()
+            .map(|m| format!(" (matched: {})", m))
+            .unwrap_or_default();
+        let _ = writeln!(
+            out,
+            "  {}: {}{}",
+            r.policy_path,
+            outcome_str(r.outcome),
+            match_info
+        );
+    }
+    out.push_str("\nCombined decision:\n");
+    let _ = writeln!(out, "{}", outcome_str(result.combined_decision.outcome));
+    if let Some(ref rule) = result.combined_decision.matched_rule {
+        let _ = writeln!(out, "First non-PASS: {}", rule);
+    }
+    if let Some(ref reason) = result.combined_decision.reason {
+        out.push_str("\nReason:\n");
+        let _ = writeln!(out, "{}", reason);
+    }
+    out.push_str("--------------------------------\n");
+    out
+}
+
+/// Produce a text report suitable for CLI output (single policy).
 pub fn explain_decision(
     _policy: &Policy,
     graph: &SignalGraph,

@@ -1,3 +1,5 @@
+name: demo-contract
+version: "1.0.0"
 policy:
   environment: prod
   rules:

@@ -1,4 +1,6 @@
 {
+  "name": "demo-signals",
+  "version": "1.0.0",
   "signals": [
     {
       "system": "support_agent",

@@ -38,8 +38,8 @@ jobs:
       - name: Run Geval
         run: |
           ./geval/target/release/geval check \
+            --contract geval/examples/contract.yaml \
             --signals signals.json \
-            --policy geval/examples/policy.yaml \
             --env prod
         continue-on-error: true
 
