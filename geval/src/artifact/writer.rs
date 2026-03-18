@@ -70,8 +70,11 @@ pub fn write_decision_artifact(
     let decisions_dir = dir.join(".geval").join("decisions");
     std::fs::create_dir_all(&decisions_dir)
         .with_context(|| format!("create {}", decisions_dir.display()))?;
-    let ts = Utc::now().format("%Y-%m-%dT%H:%M:%SZ");
-    let filename = format!("{}.json", ts);
+    let now = Utc::now();
+    let ts_iso = now.format("%Y-%m-%dT%H:%M:%SZ").to_string();
+    // Windows does not allow ':' in filenames; use dashes in time part for the filename only.
+    let ts_filename = now.format("%Y-%m-%dT%H-%M-%SZ");
+    let filename = format!("{}.json", ts_filename);
     let path = decisions_dir.join(&filename);
 
     let policy_results: Vec<PolicyResultRecord> = result
@@ -107,7 +110,7 @@ pub fn write_decision_artifact(
         policy_results,
         combined_decision: combined_decision_str.to_string(),
         combined_matched_rule: result.combined_decision.matched_rule.clone(),
-        timestamp: ts.to_string(),
+        timestamp: ts_iso,
         approval,
     };
 
