@@ -27,8 +27,7 @@ What actually happened.
 ## Environment
 
 - OS: [e.g., macOS 14.0, Ubuntu 22.04]
-- Node.js version: [e.g., 20.10.0]
-- Geval version: [e.g., 0.1.0]
+- Geval version: [e.g., `geval --version`]
 
 ## Contract File (if applicable)
 

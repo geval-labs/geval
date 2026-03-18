@@ -1,6 +1,6 @@
 # Contributing to Geval
 
-Thank you for your interest in contributing to Geval! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Geval! This document provides guidelines for contributing.
 
 ## Table of Contents
 
@@ -11,56 +11,46 @@ Thank you for your interest in contributing to Geval! This document provides gui
 - [Pull Request Process](#pull-request-process)
 - [Coding Standards](#coding-standards)
 - [Testing](#testing)
-- [Documentation](#documentation)
 
 ## Code of Conduct
 
-By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md). Please read it before contributing.
+By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
-- npm >= 10.0.0
+- [Rust](https://rustup.rs/) (stable)
 - Git
 
 ### Development Setup
 
-1. **Fork the repository**
-
-   Click the "Fork" button on GitHub to create your own copy.
-
-2. **Clone your fork**
+1. **Fork the repository** and clone your fork:
 
    ```bash
    git clone https://github.com/YOUR_USERNAME/geval.git
    cd geval
    ```
 
-3. **Add upstream remote**
+2. **Add upstream remote** (optional):
 
    ```bash
    git remote add upstream https://github.com/geval-labs/geval.git
    ```
 
-4. **Install dependencies**
+3. **Build the Geval binary**:
 
    ```bash
-   npm install
+   cargo build --release --manifest-path geval/Cargo.toml
    ```
 
-5. **Build the project**
+4. **Run tests**:
 
    ```bash
-   npm run build
+   cargo test --manifest-path geval/Cargo.toml
    ```
 
-6. **Run tests**
-
-   ```bash
-   npm test
-   ```
+The binary is at `geval/target/release/geval` (or `geval.exe` on Windows). You can run it from the repo root, e.g. `./geval/target/release/geval demo`.
 
 ## Making Changes
 
@@ -68,45 +58,23 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 
 Use descriptive branch names:
 
-- `feat/add-new-adapter` - New features
-- `fix/contract-parsing-error` - Bug fixes
-- `docs/improve-readme` - Documentation
-- `refactor/engine-cleanup` - Code refactoring
-- `test/add-diff-tests` - Adding tests
+- `feat/...` - New features
+- `fix/...` - Bug fixes
+- `docs/...` - Documentation
+- `refactor/...` - Code refactoring
+- `test/...` - Adding tests
 
 ### Commit Messages
 
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
+Follow [Conventional Commits](https://www.conventionalcommits.org/) when possible:
 
 ```
 <type>(<scope>): <description>
-
-[optional body]
-
-[optional footer]
 ```
 
-Types:
-
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation
-- `style`: Formatting (no code change)
-- `refactor`: Code restructuring
-- `test`: Adding tests
-- `chore`: Maintenance
-
-Examples:
-
-```
-feat(core): add support for custom baseline sources
-fix(cli): handle missing baseline file gracefully
-docs(readme): add CI/CD integration examples
-```
+Examples: `feat(engine): add rule X`, `fix(cli): handle missing file`, `docs(readme): update install steps`.
 
 ### Keeping Up to Date
-
-Before starting work:
 
 ```bash
 git fetch upstream
@@ -116,196 +84,42 @@ git merge upstream/main
 
 ## Pull Request Process
 
-1. **Create a feature branch**
-
+1. Create a feature branch: `git checkout -b feat/your-feature`
+2. Make your changes in the `geval/` crate.
+3. Run checks locally:
    ```bash
-   git checkout -b feat/your-feature
+   cargo test --manifest-path geval/Cargo.toml
+   cargo build --release --manifest-path geval/Cargo.toml
    ```
-
-2. **Make your changes**
-   - Write clean, readable code
-   - Add tests for new functionality
-   - Update documentation if needed
-
-3. **Run checks locally**
-
-   ```bash
-   npm run lint
-   npm run typecheck
-   npm test
-   ```
-
-4. **Commit your changes**
-
-   ```bash
-   git add .
-   git commit -m "feat(scope): description"
-   ```
-
-5. **Push to your fork**
-
-   ```bash
-   git push origin feat/your-feature
-   ```
-
-6. **Open a Pull Request**
-   - Use a clear, descriptive title
-   - Reference any related issues
-   - Describe what changes you made and why
-   - Include screenshots for UI changes
+4. Commit and push to your fork, then open a Pull Request with a clear title and description.
 
 ### PR Checklist
 
-- [ ] Code follows the project's style guidelines
-- [ ] Tests pass locally
-- [ ] New code has test coverage
-- [ ] Documentation is updated
-- [ ] Commit messages follow conventions
-- [ ] PR description is complete
+- [ ] Tests pass (`cargo test --manifest-path geval/Cargo.toml`)
+- [ ] Code builds in release mode
+- [ ] Documentation updated if needed
+- [ ] Commit messages are clear
 
 ## Coding Standards
 
-### TypeScript
-
-- Use strict TypeScript settings
-- Prefer explicit types over `any`
-- Use interfaces for object shapes
-- Document public APIs with JSDoc
-
-```typescript
-/**
- * Evaluate a contract against eval results.
- *
- * @param input - Engine input containing contract and results
- * @returns Decision object with status and violations
- */
-export function evaluate(input: EngineInput): Decision {
-  // ...
-}
-```
-
-### Code Style
-
-- Use 2 spaces for indentation
-- Use semicolons
-- Use double quotes for strings
-- Maximum line length: 100 characters
-
-We use Prettier and ESLint to enforce style. Run:
-
-```bash
-npm run format        # Format code
-npm run lint:fix      # Fix linting issues
-```
-
-### Naming Conventions
-
-- **Files**: `kebab-case.ts`
-- **Classes**: `PascalCase`
-- **Functions/Variables**: `camelCase`
-- **Constants**: `SCREAMING_SNAKE_CASE`
-- **Types/Interfaces**: `PascalCase`
-
-### Project Principles
-
-When contributing, keep these principles in mind:
-
-1. **Determinism** - Same inputs must always produce same outputs
-2. **Simplicity** - Prefer simple, readable code over clever solutions
-3. **Testability** - All logic should be testable
-4. **No Side Effects** - Core library should be pure functions
-5. **CI/CD First** - Everything should work in automated pipelines
+- **Rust**: Follow standard Rust style (`cargo fmt`, `cargo clippy`).
+- **Naming**: Use snake_case for Rust; keep CLI flags and help text consistent with existing commands.
+- **Principles**: Determinism (same signals + policy → same outcome), simplicity, and CI-friendly exit codes (0 = PASS, 1 = REQUIRE_APPROVAL, 2 = BLOCK).
 
 ## Testing
 
-### Running Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests for a specific package
-cd packages/core && npm test
-```
-
-### Writing Tests
-
-- Put tests in `__tests__` directories or `*.test.ts` files
-- Use descriptive test names
-- Test edge cases and error conditions
-- Mock external dependencies
-
-```typescript
-import { describe, it, expect } from "vitest";
-import { evaluate } from "../src/engine/evaluator";
-
-describe("evaluate", () => {
-  it("should return PASS when all rules are satisfied", () => {
-    const result = evaluate({
-      contract: mockContract,
-      evalResults: mockResults,
-      baselines: {},
-    });
-
-    expect(result.status).toBe("PASS");
-  });
-
-  it("should return BLOCK when a rule is violated", () => {
-    // ...
-  });
-});
-```
+- **Unit tests**: `cargo test --manifest-path geval/Cargo.toml`
+- Add tests for new behavior in the same crate under `geval/src/` (e.g. next to the code or in a `tests` module).
+- The CI workflow runs the same build and test commands; see [geval/docs/installation.md](geval/docs/installation.md) and [geval/docs/github-actions.md](geval/docs/github-actions.md) for local and CI usage.
 
 ## Documentation
 
-### Code Documentation
-
-- Add JSDoc comments to all public APIs
-- Include examples in documentation
-- Document parameters and return types
-
-### README and Docs
-
-- Keep README up to date with changes
-- Add examples for new features
-- Update CLI help text for new commands
-
-## Package-Specific Guidelines
-
-### @geval/core
-
-The core library must be:
-
-- Pure (no side effects)
-- Deterministic (no randomness)
-- Framework-agnostic (no Node.js-specific APIs in core logic)
-
-### @geval/cli
-
-The CLI should:
-
-- Provide clear error messages
-- Support both human and machine-readable output
-- Use appropriate exit codes
+- User-facing docs live in `geval/docs/` (installation, GitHub Actions, signals and rules, auditing).
+- Keep the main [README.md](README.md) and [geval/docs](geval/docs/) in sync with new commands or behavior.
 
 ## Questions?
 
-If you have questions:
+- Check existing [issues](https://github.com/geval-labs/geval/issues) and discussions.
+- Open an issue for bugs or feature requests.
 
-1. Check existing issues and discussions
-2. Open a new discussion for general questions
-3. Open an issue for bugs or feature requests
-
-## Recognition
-
-Contributors are recognized in our [CONTRIBUTORS.md](CONTRIBUTORS.md) file. Thank you for helping make Geval better!
-
----
-
-Thank you for contributing to Geval! 🎉
+Thank you for contributing to Geval!

@@ -1,17 +1,5 @@
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
-
-# Build outputs
-dist/
-build/
-*.tsbuildinfo
+# Rust
 target/
-
-# Testing
-coverage/
-.nyc_output/
 
 # Environment
 .env
@@ -32,19 +20,10 @@ Thumbs.db
 # Logs
 logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-
-# Turbo
-.turbo/
 
 # Misc
-*.tgz
 .cache/
-pnpm-lock.yaml
-yarn.lock
+
 # Generated documentation and test files
 geval-doc*.txt
 *-eval-test-*.csv
