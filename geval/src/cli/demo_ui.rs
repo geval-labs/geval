@@ -231,9 +231,9 @@ pub fn print_demo_report(
     line(&mut out, DELAY_LINE, &format!("  {}  {}", cyan_s(&box_bot_wide), ""));
     line(&mut out, DELAY_SECTION, "");
 
-    // Step 1: Policy
-    let loading1 = format!("  {}  {}", green_s(g.step), d("Loading policy..."));
-    let done1 = format!("  {}  {}", green_s(g.step), b("Step 1: Policy loaded"));
+    // Step 1: Contract (demo uses 1 policy)
+    let loading1 = format!("  {}  {}", green_s(g.step), d("Loading contract..."));
+    let done1 = format!("  {}  {}", green_s(g.step), b("Step 1: Contract loaded (1 policy)"));
     loading_then(&mut out, &loading1, &done1, DELAY_LOAD);
     line(&mut out, DELAY_LINE, &format!("  {}    {}", d(g.box_v), d("Environment:")));
     line(&mut out, DELAY_LINE, &format!("  {}    {}  {}", d(g.box_v), d("  "), environment.unwrap_or("(not set)")));

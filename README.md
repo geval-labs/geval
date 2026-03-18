@@ -40,20 +40,22 @@ Invoke-WebRequest -Uri https://github.com/geval-labs/geval/releases/latest/downl
 **2. Run the demo** (no files needed):
 
 ```bash
-./geval demo          # Linux / macOS
+./geval demo          # Linux / macOS — use ./ so you run this binary, not another "geval" in PATH
 .\geval.exe demo      # Windows (same folder as geval.exe)
 ```
 
-You get a report and one outcome: **PASS**, **REQUIRE_APPROVAL**, or **BLOCK** — produced by applying the demo rules to the demo signals. [Use in CI →](geval/docs/github-actions.md)
+You get a report and one outcome: **PASS**, **REQUIRE_APPROVAL**, or **BLOCK** — produced by the demo contract and signals. [Use in CI →](geval/docs/github-actions.md)
 
 **No binary for your OS?** [Build from source](geval/docs/installation.md#build-from-source).
 
+> **If you see "unknown command 'init'" or "required option '--eval'"** — you're running a **different** program named `geval` (e.g. from npm or another install). Use the **binary from [Releases](https://github.com/geval-labs/geval/releases)** or build from source and run it with `./geval` (or put it first in your PATH).
+
 ### Start from a template (like create-react-app)
 
-Inside your project (your codebase is not changed except for one new folder):
+Inside your project (your codebase is not changed except for one new folder), run the **same binary** you downloaded (e.g. `./geval`):
 
 ```bash
-geval init
+./geval init          # or: /path/to/geval init
 ```
 
 This creates a **.geval** folder with:
@@ -66,10 +68,10 @@ This creates a **.geval** folder with:
 Then run:
 
 ```bash
-geval check --contract .geval/contract.yaml --signals .geval/signals.json
+./geval check --contract .geval/contract.yaml --signals .geval/signals.json
 ```
 
-Use a different folder: `geval init my-rules`. Overwrite existing files: `geval init --force`.
+Use a different folder: `./geval init my-rules`. Overwrite existing files: `./geval init --force`.
 
 ### Updating
 
@@ -213,14 +215,16 @@ Each run is recorded: which rules, which signals, when. So you can always answer
 
 ## Commands
 
+Run with `./geval` (or ensure this repo’s binary is the one in your PATH):
+
 | Command | What it does |
 |--------|----------------|
-| `geval init` | Create a template folder (.geval) with sample data and rules. Edit and run. |
-| `geval demo` | Run the built-in example. Try this first. |
-| `geval check` | Orchestrate: run your signals + rules → one outcome (PASS / REQUIRE_APPROVAL / BLOCK) |
-| `geval explain` | Show which rule produced the outcome and which signals were used |
-| `geval approve` / `geval reject` | Record a person’s approval or rejection |
-| `geval validate-contract` | Validate contract and all referenced policies |
+| `./geval demo` | Run the built-in example. Try this first. |
+| `./geval init` | Create .geval/ with contract and policies. Edit and run. |
+| `./geval check --contract <file> --signals <file>` | Evaluate contract → one outcome (PASS / REQUIRE_APPROVAL / BLOCK) |
+| `./geval explain --contract <file> --signals <file>` | Per-policy results and combined decision report |
+| `./geval validate-contract <file>` | Validate contract and all referenced policies |
+| `./geval approve` / `./geval reject` | Record a person’s approval or rejection |
 
 ---
 
