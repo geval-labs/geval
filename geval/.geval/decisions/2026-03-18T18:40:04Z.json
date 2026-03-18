@@ -1,0 +1,14 @@
+{
+  "artifact_version": "1",
+  "geval_version": "0.1.2",
+  "policy_name": "demo-contract",
+  "policy_version": "1.0.0",
+  "signals_name": "demo-signals",
+  "signals_version": "1.0.0",
+  "policy_hash": "7664d9d21340214b7b6342bb7b90db6ec3c9f546ea4c8dd35a6cb154fa3c655f",
+  "signals_hash": "344a3d19b3b0241f3a36d817d0a6ce4d3194bd75172353b8207ebcc6c90fc8b2",
+  "decision": "BLOCK",
+  "matched_rule": "business_block",
+  "timestamp": "2026-03-18T18:40:04Z",
+  "approval": null
+}

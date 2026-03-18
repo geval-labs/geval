@@ -1,4 +1,4 @@
-//! `geval init` — create a .geval template in the current directory.
+//! `geval init` — create a .geval template with a contract and multiple policies.
 //! Safe for existing codebases: only creates files inside the chosen directory (default .geval).
 
 use anyhow::{Context, Result};
@@ -6,6 +6,8 @@ use std::fs;
 use std::path::Path;
 
 const SIGNALS_TEMPLATE: &str = r#"{
+  "name": "my-signals",
+  "version": "1.0.0",
   "signals": [
     {
       "system": "my_app",
@@ -36,18 +38,52 @@ const SIGNALS_TEMPLATE: &str = r#"{
 }
 "#;
 
-const POLICY_TEMPLATE: &str = r#"# Geval policy — your rules. Edit and add your own.
-# Rules are evaluated in priority order (lower number first). First match wins.
-# No match = PASS (allow).
-#
-# When: metric (required), optional: component, system, agent, step.
-#       operator: ">", "<", ">=", "<=", "==", or "presence" (no threshold; matches if metric exists, even without a value).
-#       threshold: number (for comparisons; not used for presence).
-# Then: action: pass | block | require_approval. Optional: reason.
+const CONTRACT_TEMPLATE: &str = r#"# Geval contract: multiple policies evaluated together.
+# name + version identify this contract; bump version when you add/remove policies or change combine.
+# combine: all_pass = PASS only if every policy passes; any_block_blocks = any BLOCK → overall BLOCK.
 
+name: release-gate
+version: "1.0.0"
+combine: all_pass
+policies:
+  - path: policies/security.yaml
+  - path: policies/quality.yaml
+"#;
+
+const POLICY_SECURITY_TEMPLATE: &str = r#"# Security policy — block on safety violations.
+name: security
+version: "1.0.0"
 policy:
   environment: prod
+  rules:
+    - priority: 1
+      name: block_high_hallucination
+      when:
+        component: generator
+        metric: hallucination_rate
+        operator: ">"
+        threshold: 0.05
+      then:
+        action: block
+        reason: "Hallucination rate too high"
 
+    - priority: 2
+      name: block_low_retrieval_quality
+      when:
+        component: retrieval
+        metric: context_relevance
+        operator: "<"
+        threshold: 0.7
+      then:
+        action: block
+        reason: "Retrieval quality below minimum"
+"#;
+
+const POLICY_QUALITY_TEMPLATE: &str = r#"# Quality policy — business and quality gates.
+name: quality
+version: "1.0.0"
+policy:
+  environment: prod
   rules:
     - priority: 1
       name: block_engagement_drop
@@ -60,16 +96,6 @@ policy:
         reason: "Business engagement dropped"
 
     - priority: 2
-      name: block_high_hallucination
-      when:
-        component: generator
-        metric: hallucination_rate
-        operator: ">"
-        threshold: 0.05
-      then:
-        action: block
-
-    - priority: 3
       name: require_approval_low_retrieval
       when:
         component: retrieval
@@ -79,15 +105,6 @@ policy:
       then:
         action: require_approval
         reason: "Retrieval quality below threshold"
-
-    - priority: 4
-      name: pass_high_accuracy
-      when:
-        metric: context_relevance
-        operator: ">="
-        threshold: 0.9
-      then:
-        action: pass
 "#;
 
 fn readme_content(dir: &Path) -> String {
@@ -99,56 +116,63 @@ Created by `geval init`. Edit the files in this folder and run Geval from your p
 
 ## Files
 
-- **signals.json** — Your data (metrics, scores). Add or change entries. Each entry can have: system, agent, component, step, metric, value, type.
-- **policy.yaml** — Your rules. Order by priority; first matching rule wins. Actions: pass, block, require_approval.
+- **contract.yaml** — Contract: name, version, combine rule, and list of policy paths. Bump version when you change policies or combine rule.
+- **policies/** — Policy files (e.g. security.yaml, quality.yaml). Each has name, version, and rules. Paths in contract are relative to the contract file.
+- **signals.json** — Your data (metrics, scores). Set name and version; bump version when the pipeline or schema changes.
+
+## Combine rules
+
+- **all_pass** — Overall PASS only if every policy returns PASS; any BLOCK → BLOCK; any REQUIRE_APPROVAL (and no BLOCK) → REQUIRE_APPROVAL.
+- **any_block_blocks** — Any policy BLOCK → overall BLOCK; else any REQUIRE_APPROVAL → REQUIRE_APPROVAL; else PASS.
 
 ## Run
 
-From the **project root** (parent of this folder):
+From the **project root**:
 
 ```bash
-geval check --signals {}/signals.json --policy {}/policy.yaml
+geval check --contract {}/contract.yaml --signals {}/signals.json
 ```
 
-Explain why you got that result:
+Explain:
 
 ```bash
-geval explain --signals {}/signals.json --policy {}/policy.yaml
+geval explain --contract {}/contract.yaml --signals {}/signals.json
 ```
 
-Validate your rules file:
+Validate contract and all policies:
 
 ```bash
-geval validate-policy {}/policy.yaml
+geval validate-contract {}/contract.yaml
 ```
 
 ## Approve / reject
 
-If the result is REQUIRE_APPROVAL, record a decision:
+If the result is REQUIRE_APPROVAL:
 
 ```bash
 geval approve --reason "Reviewed and approved" --output {}/approval.json
-# or
 geval reject --reason "Needs more testing" --output {}/rejection.json
 ```
 
-Your codebase is unchanged except for this folder. Add these files to version control if you want to share rules with your team.
+Add these files to version control to share the contract with your team.
 "#,
         dir_str, dir_str, dir_str, dir_str, dir_str, dir_str, dir_str
     )
 }
 
-/// Run `geval init`: create directory and template files.
-/// If directory already has signals.json or policy.yaml and force is false, returns error.
+/// Run `geval init`: create directory, contract, policies/, signals, README.
 pub fn run_init(dir: &Path, force: bool) -> Result<()> {
+    let contract_path = dir.join("contract.yaml");
     let signals_path = dir.join("signals.json");
-    let policy_path = dir.join("policy.yaml");
     let readme_path = dir.join("README.md");
+    let policies_dir = dir.join("policies");
+    let security_path = policies_dir.join("security.yaml");
+    let quality_path = policies_dir.join("quality.yaml");
 
     if dir.exists() {
+        let has_contract = contract_path.exists();
         let has_signals = signals_path.exists();
-        let has_policy = policy_path.exists();
-        if (has_signals || has_policy) && !force {
+        if (has_contract || has_signals) && !force {
             anyhow::bail!(
                 "Directory {} already has template files. Use --force to overwrite.",
                 dir.display()
@@ -158,10 +182,17 @@ pub fn run_init(dir: &Path, force: bool) -> Result<()> {
         fs::create_dir_all(dir).with_context(|| format!("create directory {}", dir.display()))?;
     }
 
+    fs::create_dir_all(&policies_dir)
+        .with_context(|| format!("create {}", policies_dir.display()))?;
+
+    fs::write(&contract_path, CONTRACT_TEMPLATE)
+        .with_context(|| format!("write {}", contract_path.display()))?;
     fs::write(&signals_path, SIGNALS_TEMPLATE)
         .with_context(|| format!("write {}", signals_path.display()))?;
-    fs::write(&policy_path, POLICY_TEMPLATE)
-        .with_context(|| format!("write {}", policy_path.display()))?;
+    fs::write(&security_path, POLICY_SECURITY_TEMPLATE)
+        .with_context(|| format!("write {}", security_path.display()))?;
+    fs::write(&quality_path, POLICY_QUALITY_TEMPLATE)
+        .with_context(|| format!("write {}", quality_path.display()))?;
     fs::write(&readme_path, readme_content(dir))
         .with_context(|| format!("write {}", readme_path.display()))?;
 

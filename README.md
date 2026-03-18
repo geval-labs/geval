@@ -58,17 +58,18 @@ geval init
 
 This creates a **.geval** folder with:
 
-- **signals.json** — sample signals (scores, presence-only). Edit and add yours.
-- **policy.yaml** — sample rules. Edit and add yours.
-- **README.md** — how to run from here.
+- **contract.yaml** — Contract: name, version, combine rule, and list of policy paths.
+- **policies/** — Policy files (e.g. security.yaml, quality.yaml). Edit and add rules.
+- **signals.json** — Sample signals. Edit and add yours.
+- **README.md** — How to run from here.
 
 Then run:
 
 ```bash
-geval check --signals .geval/signals.json --policy .geval/policy.yaml
+geval check --contract .geval/contract.yaml --signals .geval/signals.json
 ```
 
-Use a different folder: `geval init my-rules`. Overwrite existing template files: `geval init --force`.
+Use a different folder: `geval init my-rules`. Overwrite existing files: `geval init --force`.
 
 ### Updating
 
@@ -76,9 +77,9 @@ Use the same download commands. Replace your old file with the new one. Check ve
 
 ---
 
-## Use Geval with your own signals and rules
+## Use Geval with your own signals and contract
 
-You need **two files**: **your signals** (any kind — scores, flags, presence-only) and **your rules**. Geval doesn't decide; it **orchestrates** and **reconciles** your rules against your signals and returns one outcome. Use `geval init` for a ready-made template, or create the files yourself below.
+You need a **contract** (one YAML that references one or more **policy** files) and a **signals** file. Geval evaluates each policy against the same signals, then combines outcomes (e.g. all must pass, or any block blocks). Use `geval init` for a template with a contract and two policies, or create the files yourself below.
 
 **All kinds of signals:** Not every signal needs a score. You can mix: entries with a numeric `value`, and entries with no value (presence-only). Use a rule with `operator: presence` to match “this metric exists.” [Details →](geval/docs/signals-and-rules.md)
 
@@ -99,15 +100,25 @@ Example — save as `mydata.json`:
 
 You can add labels like `component` or `system` if you need them. [Full example →](geval/examples/signals.json)
 
-### Step 2: Your rules (rules file)
+### Step 2: Your contract and policies
 
-A list of rules in order. Geval applies the first rule, then the next, and stops at the first match. It doesn't interpret — it just evaluates your conditions against your signals.
+A **contract** is a YAML file that lists one or more **policy** files and a **combination rule** (how to merge their outcomes). Each **policy** file contains ordered rules: **When** [condition on signals], **then** [pass / block / require_approval].
 
-Each rule says: **When** [something about your signals], **then** [allow / need approval / block].
-
-Example — save as `myrules.yaml`:
+Example contract — save as `contract.yaml`:
 
 ```yaml
+name: my-gate
+version: "1.0.0"
+combine: all_pass
+policies:
+  - path: policy.yaml
+```
+
+Example policy — save as `policy.yaml` (path relative to the contract file):
+
+```yaml
+name: quality
+version: "1.0.0"
 policy:
   rules:
     - priority: 1
@@ -118,8 +129,6 @@ policy:
         threshold: 0
       then:
         action: block
-        reason: "Engagement dropped"
-
     - priority: 2
       name: allow_good_accuracy
       when:
@@ -130,38 +139,34 @@ policy:
         action: pass
 ```
 
-**Operators:** `>` greater than, `<` less than, `>=` at least, `<=` at most, `==` equal, `presence` = metric exists (no threshold; use for signals without a score).
+**Combine rules:** `all_pass` = PASS only if every policy passes; `any_block_blocks` = any policy BLOCK → overall BLOCK. **Operators:** `>`, `<`, `>=`, `<=`, `==`, `presence`. **Actions:** `pass`, `block`, `require_approval`.
 
-**Actions:** `pass` = allow. `block` = don’t allow. `require_approval` = a person must say yes first.
-
-[Full example →](geval/examples/policy.yaml)
+[Full example →](geval/examples/contract.yaml) and [policy →](geval/examples/policy.yaml)
 
 ### Step 3: Run Geval
 
-Point Geval at your two files:
-
 ```bash
-./geval check --signals mydata.json --policy myrules.yaml
+./geval check --contract contract.yaml --signals mydata.json
 ```
 
-(Windows: `.\geval.exe check --signals mydata.json --policy myrules.yaml`)
+(Windows: `.\geval.exe check --contract contract.yaml --signals mydata.json`)
 
 ### Step 4: Read the outcome
 
-- **PASS** — No rule matched a block or require-approval. You’re good to go.
-- **REQUIRE_APPROVAL** — A rule says someone must approve before you go.
-- **BLOCK** — A rule says stop. Fix the issue before going.
+- **PASS** — Every policy passed (or combined rule says go).
+- **REQUIRE_APPROVAL** — At least one policy requires approval.
+- **BLOCK** — At least one policy blocks.
 
-To see **which rule** produced that outcome (and which signals it used):
+To see **per-policy results** and the combined decision:
 
 ```bash
-./geval explain --signals mydata.json --policy myrules.yaml
+./geval explain --contract contract.yaml --signals mydata.json
 ```
 
-To check that your rules file is valid (no run needed):
+To validate the contract and all referenced policies:
 
 ```bash
-./geval validate-policy myrules.yaml
+./geval validate-contract contract.yaml
 ```
 
 ---
@@ -215,7 +220,7 @@ Each run is recorded: which rules, which signals, when. So you can always answer
 | `geval check` | Orchestrate: run your signals + rules → one outcome (PASS / REQUIRE_APPROVAL / BLOCK) |
 | `geval explain` | Show which rule produced the outcome and which signals were used |
 | `geval approve` / `geval reject` | Record a person’s approval or rejection |
-| `geval validate-policy` | Check your rules file is valid |
+| `geval validate-contract` | Validate contract and all referenced policies |
 
 ---
 
@@ -223,7 +228,11 @@ Each run is recorded: which rules, which signals, when. So you can always answer
 
 | Guide | Description |
 |-------|-------------|
+| [**Architecture**](geval/docs/architecture.md) | Contract = multiple policies + combine rule; module layout |
 | [**Signals and rules**](geval/docs/signals-and-rules.md) | Non-uniform signals (scores, presence-only, mix); how rules use them |
+| [**Signal assumptions**](geval/docs/signal-assumptions.md) | What we assume; what input forms we accept (number, string, trace, object) |
+| [**Versioning**](geval/docs/versioning.md) | Contract, policy, and signals versioning; nothing unversioned |
+| [**Extending**](geval/docs/extending.md) | How to add a combination rule or change behavior; process and conventions |
 | [**GitHub Actions**](geval/docs/github-actions.md) | Use Geval in CI |
 | [**Examples**](geval/examples/README.md) | Sample data and rules files |
 | [**Installation**](geval/docs/installation.md) | Install, PATH, build from source |

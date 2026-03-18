@@ -87,9 +87,16 @@ pub struct Rule {
     pub then: RuleConsequence,
 }
 
-/// Top-level policy: environment and ordered rules.
+/// Top-level policy (contract): optional identity for audit; environment and ordered rules.
+/// Name + version identify the "contract" so every decision is tied to a versioned policy.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Policy {
+    /// Contract/policy name (e.g. "release-gate"). For audit; no semantic effect.
+    #[serde(default)]
+    pub name: Option<String>,
+    /// Contract/policy version (e.g. "1.0.0"). Bump when you change rules; every decision records this.
+    #[serde(default)]
+    pub version: Option<String>,
     #[serde(default)]
     pub environment: Option<String>,
     pub rules: Vec<Rule>,

@@ -1,0 +1,8 @@
+# Example contract: one policy for simple demo.
+# For multiple policies, add e.g. policies/security.yaml and policies/quality.yaml and list them here.
+
+name: demo
+version: "1.0.0"
+combine: all_pass
+policies:
+  - path: policy.yaml

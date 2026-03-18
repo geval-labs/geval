@@ -1,8 +1,12 @@
 //! Human approval/rejection artifacts for REQUIRE_APPROVAL flow.
+//! Every approval artifact is versioned for audit.
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+
+/// Schema version of the approval artifact format. Bump when the shape changes.
+pub const APPROVAL_ARTIFACT_VERSION: &str = "1";
 
 /// Outcome of an approval/rejection action.
 #[derive(Debug, Clone, Copy)]
@@ -14,11 +18,18 @@ pub enum ApprovalOutcome {
 /// Artifact written by `geval approve` or `geval reject`.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApprovalArtifact {
+    /// Artifact format version. Defaults to "1" when reading old artifacts.
+    #[serde(default = "default_approval_version")]
+    pub version: String,
     pub approved_by: String,
     pub reason: String,
     pub timestamp: String,
     /// true = approval, false = rejection
     pub approved: bool,
+}
+
+fn default_approval_version() -> String {
+    "1".to_string()
 }
 
 /// Write approval artifact to a path (e.g. .geval/approval.json or user-specified).
@@ -30,6 +41,7 @@ pub fn write_approval(
 ) -> Result<()> {
     let timestamp = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
     let artifact = ApprovalArtifact {
+        version: APPROVAL_ARTIFACT_VERSION.to_string(),
         approved_by,
         reason,
         timestamp,

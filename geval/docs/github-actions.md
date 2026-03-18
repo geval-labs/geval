@@ -34,8 +34,8 @@ jobs:
       - name: Run Geval
         run: |
           ./geval/target/release/geval check \
+            --contract contract.yaml \
             --signals signals.json \
-            --policy policy.yaml \
             --env prod
 ```
 
@@ -46,7 +46,7 @@ Use when you rely on an official Geval release:
 ```yaml
       - name: Install Geval
         run: |
-          curl -L https://github.com/geval/geval/releases/latest/download/geval-linux-x86_64 -o geval
+          curl -L https://github.com/geval-labs/geval/releases/latest/download/geval-linux-x86_64 -o geval
           chmod +x geval
 
       - name: Generate signals
@@ -56,8 +56,8 @@ Use when you rely on an official Geval release:
       - name: Run Geval
         run: |
           ./geval check \
-            --signals signals.json \
-            --policy policy.yaml
+            --contract contract.yaml \
+            --signals signals.json
 ```
 
 ## Exit codes
@@ -72,7 +72,7 @@ Use these in a later step to fail the job on BLOCK or REQUIRE_APPROVAL if desire
       - name: Run Geval
         id: geval
         run: |
-          ./geval check --signals signals.json --policy policy.yaml --env prod
+          ./geval check --contract contract.yaml --signals signals.json --env prod
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 ```
 
@@ -81,13 +81,13 @@ Then `if: steps.geval.outputs.exitcode == '0'` for merge gates.
 ## Post result to PR (GitHub CLI)
 
 ```bash
-RESULT=$(./geval check --signals signals.json --policy policy.yaml)
+RESULT=$(./geval check --contract contract.yaml --signals signals.json)
 gh pr comment $PR_NUMBER --body "$RESULT"
 ```
 
 Or capture the explain output:
 
 ```bash
-RESULT=$(./geval explain --signals signals.json --policy policy.yaml)
+RESULT=$(./geval explain --contract contract.yaml --signals signals.json)
 gh pr comment $PR_NUMBER --body "$RESULT"
 ```

@@ -1,6 +1,14 @@
-//! SHA256 hashing for policy and signals (audit reproducibility).
+//! SHA256 hashing for contract, policies, and signals (audit reproducibility).
 
 use sha2::{Digest, Sha256};
+
+/// Compute SHA256 hex digest of contract definition (name, version, combine, policy paths).
+pub fn hash_contract_content(contract: &crate::contract::ContractDef) -> String {
+    let json = serde_json::to_string(contract).unwrap_or_default();
+    let mut hasher = Sha256::new();
+    hasher.update(json.as_bytes());
+    format!("{:x}", hasher.finalize())
+}
 
 /// Compute SHA256 hex digest of serialized policy.
 pub fn hash_policy(policy: &crate::policy::Policy) -> String {

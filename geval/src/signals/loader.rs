@@ -39,23 +39,40 @@ pub struct Signal {
     pub r#type: Option<String>,
 }
 
-/// Top-level container: either { "signals": [...] } or raw array.
+/// Top-level container: either { "name"?, "version"?, "signals": [...] } or raw array.
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
 enum SignalsInput {
-    Wrapped { signals: Vec<Signal> },
+    Wrapped {
+        #[serde(default)]
+        name: Option<String>,
+        #[serde(default)]
+        version: Option<String>,
+        signals: Vec<Signal>,
+    },
     Array(Vec<Signal>),
 }
 
 /// Set of signals loaded from a file or reader.
+/// Name and version identify the signals set for audit; bump version when the pipeline or schema changes.
 #[derive(Debug, Clone)]
 pub struct SignalSet {
+    pub name: Option<String>,
+    pub version: Option<String>,
     pub signals: Vec<Signal>,
 }
 
 impl SignalSet {
     pub fn new(signals: Vec<Signal>) -> Self {
-        Self { signals }
+        Self {
+            name: None,
+            version: None,
+            signals,
+        }
+    }
+
+    pub fn with_identity(name: Option<String>, version: Option<String>, signals: Vec<Signal>) -> Self {
+        Self { name, version, signals }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -77,17 +94,17 @@ pub fn load_signals(path: &Path) -> Result<SignalSet> {
 pub fn load_signals_from_reader<R: std::io::Read>(rd: R) -> Result<SignalSet> {
     let value: serde_json::Value =
         serde_json::from_reader(rd).context("parse signals JSON")?;
-    let signals = parse_signals_value(&value)?;
-    Ok(SignalSet::new(signals))
+    parse_signals_value(&value)
 }
 
-fn parse_signals_value(v: &serde_json::Value) -> Result<Vec<Signal>> {
+fn parse_signals_value(v: &serde_json::Value) -> Result<SignalSet> {
     let input: SignalsInput = serde_json::from_value(v.clone()).context("invalid signals structure")?;
-    let signals = match input {
-        SignalsInput::Wrapped { signals } => signals,
-        SignalsInput::Array(signals) => signals,
-    };
-    Ok(signals)
+    match input {
+        SignalsInput::Wrapped { name, version, signals } => {
+            Ok(SignalSet::with_identity(name, version, signals))
+        }
+        SignalsInput::Array(signals) => Ok(SignalSet::new(signals)),
+    }
 }
 
 #[cfg(test)]
@@ -108,5 +125,14 @@ mod tests {
         let set = load_signals_from_reader(json.as_bytes()).unwrap();
         assert_eq!(set.len(), 2);
         assert_eq!(set.signals[1].component.as_deref(), Some("retrieval"));
+    }
+
+    #[test]
+    fn test_load_signals_with_version() {
+        let json = r#"{"version":"1.0","name":"ci-signals","signals":[{"metric":"x","value":0.5}]}"#;
+        let set = load_signals_from_reader(json.as_bytes()).unwrap();
+        assert_eq!(set.version.as_deref(), Some("1.0"));
+        assert_eq!(set.name.as_deref(), Some("ci-signals"));
+        assert_eq!(set.len(), 1);
     }
 }
