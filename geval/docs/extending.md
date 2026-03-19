@@ -22,7 +22,7 @@ This document describes how to change or extend Geval in a consistent, testable 
 - **Contract** – `contract/model.rs`, `contract/loader.rs`, `contract/runner.rs`, `contract/combine.rs`.
 - **Policy** – `policy/model.rs`, `policy/parser.rs`; then `evaluator/engine.rs` if rule semantics change.
 - **Signals** – `signals/loader.rs`, `signal_graph/` if lookup behavior changes.
-- **Artifact** – `artifact/writer.rs`; bump `DECISION_ARTIFACT_VERSION` if the JSON shape changes.
+- **Artifact** – `artifact/writer.rs` (`write_multi_contract_artifact`); bump `DECISION_ARTIFACT_VERSION` if the JSON shape changes.
 - **CLI** – `cli/commands.rs`; add or update subcommands/args.
 
 Keep functions small and pure where possible; use `anyhow::Result` and `Context` for errors.
@@ -59,7 +59,7 @@ Run: `cargo test --manifest-path geval/Cargo.toml`.
 
 1. **Model** – Add the field to `ContractDef` or `Policy` in the appropriate `model.rs`; use `Option<T>` and `#[serde(default)]` for backward compatibility if we still support old files.
 2. **Parser** – If the field comes from YAML, ensure the parser (contract loader or policy parser) reads it and fills the model.
-3. **Artifact** – If the field should be audited, add it to `DecisionArtifact` (and to the code that builds the artifact from `ContractResult` and versions).
+3. **Artifact** – If the field should be audited, add it to `DecisionArtifactV3` / `ContractDecisionBlock` in `artifact/writer.rs` (and the code that builds from `MultiContractRun`).
 4. **Tests** – Parse a sample YAML with the new field and assert it’s present; if the field affects evaluation, add an evaluator or runner test.
 
 ## Adding a new CLI command

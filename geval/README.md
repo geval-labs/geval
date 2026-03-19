@@ -9,7 +9,7 @@ Geval consumes **signals** (JSON) and **policy** (YAML), evaluates rules in prio
 Geval is **not** an npm or pip package. It is a **single static binary** you run locally or in CI.
 
 - **Install:** Download a [release binary](https://github.com/geval/geval/releases) for your OS, or build from source with `cargo build --release`.
-- **Integrate:** Run `geval check --signals signals.json --policy policy.yaml` in your repo; use exit codes (0/1/2) in CI or scripts. Your pipeline produces `signals.json` (e.g. via Node or Python); Geval only reads files and writes artifacts.
+- **Integrate:** Run `geval check --contract contract.yaml --signals signals.json` (repeat `--contract` for multiple gates on one PR); use exit codes (0/1/2) in CI or scripts. Your pipeline produces `signals.json`; Geval only reads files and writes artifacts.
 
 See **[Installation](docs/installation.md)** for download links, build-from-source steps, and local/CI integration.
 
@@ -31,7 +31,7 @@ cargo build --release
 **If you have a release binary:** ensure `geval` is on your PATH, then:
 
 ```bash
-geval check --signals signals.json --policy policy.yaml --env prod
+geval check --contract contract.yaml --signals signals.json --env prod
 ```
 
 Exit codes: `0` = PASS, `1` = REQUIRE_APPROVAL, `2` = BLOCK.
@@ -40,15 +40,15 @@ Exit codes: `0` = PASS, `1` = REQUIRE_APPROVAL, `2` = BLOCK.
 
 | Command | Description |
 |--------|-------------|
-| `geval check` | Evaluate signals against policy; exit 0/1/2 |
+| `geval check` | Evaluate signals against one or more contracts; exit 0/1/2 |
 | `geval approve` | Record human approval (e.g. for REQUIRE_APPROVAL) |
 | `geval reject` | Record human rejection |
 | `geval explain` | Print human-readable decision report |
-| `geval validate-policy` | Validate policy file syntax |
+| `geval validate-contract` | Validate contract file(s) and referenced policies |
 
 ## Artifacts
 
-- **Decisions:** `.geval/decisions/<timestamp>.json` (policy_hash, signals_hash, decision, matched_rule)
+- **Decisions:** `.geval/decisions/<timestamp>.json` (v3: per-contract results, `bundle_hash`, overall decision, signals_hash)
 - **Approval:** e.g. `.geval/approval.json` (approved_by, reason, timestamp)
 
 ## Docs

@@ -5,14 +5,15 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
 use crate::approval::write_approval;
-use crate::artifact::write_decision_artifact;
+use crate::artifact::write_multi_contract_artifact;
 use crate::cli::{demo_ui::print_demo_report, init::run_init as do_init};
 use crate::contract::{
-    load_contract_and_policies, run_contract, CombineRule, ContractDef, PolicyRef,
+    load_contract_and_policies, load_run_contracts, run_contract, CombineRule, ContractDef,
+    PolicyRef,
 };
 use crate::evaluator::{evaluate_with_trace, DecisionOutcome};
-use crate::explanation::explain_contract_result;
-use crate::hashing::{hash_contract_content, hash_policy, hash_signals};
+use crate::explanation::explain_multi_contract_result;
+use crate::hashing::{hash_contract_bundle, hash_signals};
 use crate::policy::parse_policy_str;
 use crate::signal_graph::SignalGraph;
 use crate::signals::load_signals_from_reader;
@@ -30,7 +31,7 @@ pub struct Commands {
 
 #[derive(Subcommand)]
 pub enum Sub {
-    /// Evaluate signals against a contract (multiple policies); exit 0=PASS, 1=REQUIRE_APPROVAL, 2=BLOCK.
+    /// Evaluate signals against one or more contracts; exit 0=PASS, 1=REQUIRE_APPROVAL, 2=BLOCK.
     Check(CheckOpts),
     /// Create a template folder with contract and policies. Edit and run.
     Init(InitOpts),
@@ -40,9 +41,9 @@ pub enum Sub {
     Approve(ApproveOpts),
     /// Record human rejection.
     Reject(RejectOpts),
-    /// Print human-readable decision report (contract + per-policy + combined).
+    /// Print human-readable decision report (multi-contract + overall).
     Explain(ExplainOpts),
-    /// Validate contract file and all referenced policies.
+    /// Validate one or more contract files and all referenced policies.
     ValidateContract(ValidateContractOpts),
 }
 
@@ -106,12 +107,24 @@ policy:
         action: require_approval
 "#;
 
+fn parse_combine_rule(s: &str) -> Result<CombineRule, String> {
+    s.parse()
+}
+
 #[derive(clap::Args)]
 pub struct CheckOpts {
     #[arg(long, short = 's')]
     pub signals: PathBuf,
-    #[arg(long, short = 'c')]
-    pub contract: PathBuf,
+    /// Contract YAML file(s); repeat for multiple contracts on one PR.
+    #[arg(long, short = 'c', action = clap::ArgAction::Append, required = true)]
+    pub contract: Vec<PathBuf>,
+    /// How to merge each contract’s combined outcome (default: all must pass).
+    #[arg(
+        long = "combine-contracts",
+        default_value = "all_pass",
+        value_parser = parse_combine_rule
+    )]
+    pub combine_contracts: CombineRule,
     #[arg(long, short = 'e', env = "GEVAL_ENV")]
     pub env: Option<String>,
     #[arg(long)]
@@ -142,15 +155,23 @@ pub struct RejectOpts {
 pub struct ExplainOpts {
     #[arg(long, short = 's')]
     pub signals: PathBuf,
-    #[arg(long, short = 'c')]
-    pub contract: PathBuf,
+    #[arg(long, short = 'c', action = clap::ArgAction::Append, required = true)]
+    pub contract: Vec<PathBuf>,
+    #[arg(
+        long = "combine-contracts",
+        default_value = "all_pass",
+        value_parser = parse_combine_rule
+    )]
+    pub combine_contracts: CombineRule,
     #[arg(long, short = 'e', env = "GEVAL_ENV")]
     pub env: Option<String>,
 }
 
 #[derive(clap::Args)]
 pub struct ValidateContractOpts {
-    pub contract: PathBuf,
+    /// One or more contract YAML files to validate.
+    #[arg(required = true)]
+    pub contract: Vec<PathBuf>,
     #[arg(long)]
     pub json: bool,
 }
@@ -192,6 +213,10 @@ fn run_init(opts: &InitOpts) -> Result<()> {
     println!(
         "Edit the files, then run: geval check --contract {}/contract.yaml --signals {}/signals.json",
         opts.directory.display(),
+        opts.directory.display()
+    );
+    println!(
+        "Multiple contracts: geval check -c path/a.yaml -c path/b.yaml --signals {}/signals.json",
         opts.directory.display()
     );
     Ok(())
@@ -237,23 +262,24 @@ fn run_demo(opts: &DemoOpts) -> Result<()> {
 }
 
 fn run_check(opts: &CheckOpts) -> Result<()> {
-    let (contract, policies) =
-        load_contract_and_policies(&opts.contract).context("load contract and policies")?;
     let signals = crate::signals::load_signals(&opts.signals).context("load signals")?;
     let graph = SignalGraph::build(&signals.signals);
 
-    let result = run_contract(&contract, &policies, &graph).context("run contract")?;
+    let run = load_run_contracts(&opts.contract, &graph, opts.combine_contracts)
+        .context("run contracts")?;
 
-    let contract_hash = hash_contract_content(&contract);
-    let policy_hashes: Vec<String> = policies.iter().map(hash_policy).collect();
     let signals_hash = hash_signals(&signals);
+    let bundle_pairs: Vec<(PathBuf, &str)> = run
+        .entries
+        .iter()
+        .map(|e| (e.contract_path.clone(), e.contract_hash.as_str()))
+        .collect();
+    let bundle_hash = hash_contract_bundle(&bundle_pairs);
 
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let _ = write_decision_artifact(
+    let _ = write_multi_contract_artifact(
         &cwd,
-        &result,
-        &contract_hash,
-        &policy_hashes,
+        &run,
         &signals_hash,
         signals.name.as_deref(),
         signals.version.as_deref(),
@@ -263,24 +289,34 @@ fn run_check(opts: &CheckOpts) -> Result<()> {
 
     if opts.json {
         let out = serde_json::json!({
-            "contract": result.contract_name,
-            "combined_decision": outcome_str(result.combined_decision.outcome),
-            "combine_rule": result.combine_rule.to_string(),
-            "policy_results": result.policy_results.iter().map(|r| serde_json::json!({
-                "policy_path": r.policy_path,
-                "outcome": outcome_str(r.outcome),
-                "matched_rule": r.matched_rule,
+            "contracts_combine_rule": run.contracts_combine.to_string(),
+            "bundle_hash": bundle_hash,
+            "contracts": run.entries.iter().map(|e| serde_json::json!({
+                "contract_path": e.contract_path,
+                "contract_name": e.result.contract_name,
+                "contract_version": e.result.contract_version,
+                "contract_hash": e.contract_hash,
+                "combine_rule": e.result.combine_rule.to_string(),
+                "policy_results": e.result.policy_results.iter().map(|r| serde_json::json!({
+                    "policy_path": r.policy_path,
+                    "outcome": outcome_str(r.outcome),
+                    "matched_rule": r.matched_rule,
+                })).collect::<Vec<_>>(),
+                "combined_decision": outcome_str(e.result.combined_decision.outcome),
             })).collect::<Vec<_>>(),
+            "overall_combined_decision": outcome_str(run.overall.outcome),
+            "overall_matched_rule": run.overall.matched_rule,
+            "overall_reason": run.overall.reason,
         });
         println!("{}", serde_json::to_string_pretty(&out)?);
     } else {
         println!(
             "{}",
-            explain_contract_result(&result, &graph, opts.env.as_deref())
+            explain_multi_contract_result(&run, &graph, opts.env.as_deref())
         );
     }
 
-    let code = match result.combined_decision.outcome {
+    let code = match run.overall.outcome {
         DecisionOutcome::Pass => 0,
         DecisionOutcome::RequireApproval => 1,
         DecisionOutcome::Block => 2,
@@ -311,45 +347,57 @@ fn run_reject(opts: &RejectOpts) -> Result<()> {
 }
 
 fn run_explain(opts: &ExplainOpts) -> Result<()> {
-    let (contract, policies) =
-        load_contract_and_policies(&opts.contract).context("load contract and policies")?;
     let signals = crate::signals::load_signals(&opts.signals).context("load signals")?;
     let graph = SignalGraph::build(&signals.signals);
-    let result = run_contract(&contract, &policies, &graph).context("run contract")?;
+    let run = load_run_contracts(&opts.contract, &graph, opts.combine_contracts)
+        .context("run contracts")?;
     println!(
         "{}",
-        explain_contract_result(&result, &graph, opts.env.as_deref())
+        explain_multi_contract_result(&run, &graph, opts.env.as_deref())
     );
     Ok(())
 }
 
 fn run_validate_contract(opts: &ValidateContractOpts) -> Result<()> {
-    let (contract, policies) =
-        load_contract_and_policies(&opts.contract).context("load contract and policies")?;
+    let mut summaries = Vec::new();
+    for path in &opts.contract {
+        let (contract, policies) =
+            load_contract_and_policies(path).with_context(|| format!("{}", path.display()))?;
+        summaries.push((path.clone(), contract, policies));
+    }
     if opts.json {
-        let out = serde_json::json!({
-            "name": contract.name,
-            "version": contract.version,
-            "combine": contract.combine.to_string(),
-            "policies": contract.policies.iter().map(|p| &p.path).collect::<Vec<_>>(),
-            "policy_count": policies.len(),
-        });
+        let out: Vec<serde_json::Value> = summaries
+            .iter()
+            .map(|(path, contract, policies)| {
+                serde_json::json!({
+                    "contract_path": path,
+                    "name": contract.name,
+                    "version": contract.version,
+                    "combine": contract.combine.to_string(),
+                    "policies": contract.policies.iter().map(|p| &p.path).collect::<Vec<_>>(),
+                    "policy_count": policies.len(),
+                })
+            })
+            .collect();
         println!("{}", serde_json::to_string_pretty(&out)?);
     } else {
-        println!(
-            "Contract valid: {} (version {}), {} policy/policies, combine={}",
-            contract.name,
-            contract.version,
-            policies.len(),
-            contract.combine
-        );
-        for (i, (pref, policy)) in contract.policies.iter().zip(policies.iter()).enumerate() {
+        for (path, contract, policies) in &summaries {
             println!(
-                "  {}: {} ({} rule(s))",
-                i + 1,
-                pref.path,
-                policy.rules.len()
+                "Contract valid: {} — {} (version {}), {} policy/policies, combine={}",
+                path.display(),
+                contract.name,
+                contract.version,
+                policies.len(),
+                contract.combine
             );
+            for (i, (pref, policy)) in contract.policies.iter().zip(policies.iter()).enumerate() {
+                println!(
+                    "  {}: {} ({} rule(s))",
+                    i + 1,
+                    pref.path,
+                    policy.rules.len()
+                );
+            }
         }
     }
     Ok(())

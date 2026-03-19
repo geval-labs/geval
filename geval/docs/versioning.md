@@ -57,13 +57,14 @@ The decision artifact records `signals_name` and `signals_version` when present.
 
 Every `geval check` writes a versioned artifact to `.geval/decisions/<timestamp>.json`:
 
-- **artifact_version** – Schema version of the artifact format.
+- **artifact_version** – Schema version (current: **3** — multi-contract).
 - **geval_version** – Geval binary version that produced the decision.
-- **policy_name**, **policy_version** – From the policy (contract) file.
+- **contracts** – Each contract’s `contract_name`, `contract_version`, `contract_hash`, and per-policy `policy_name` / `policy_version` / `policy_hash` when present.
+- **bundle_hash** – Hash of the ordered contract set (paths + content hashes).
 - **signals_name**, **signals_version** – From the signals file.
-- **policy_hash**, **signals_hash** – Content hashes (SHA256) for integrity.
+- **signals_hash** – Content hash (SHA256) for integrity.
 
-So every decision is fully traceable: which contract version, which signals version, which binary.
+So every decision is fully traceable: which contract versions (one or many), which signals version, which binary.
 
 ## Approval artifact
 

@@ -26,3 +26,32 @@ pub fn hash_signals(signals: &crate::signals::SignalSet) -> String {
     hasher.update(bytes.as_bytes());
     format!("{:x}", hasher.finalize())
 }
+
+/// Deterministic digest of an ordered list of contract paths and their content hashes (audit bundle).
+pub fn hash_contract_bundle(entries: &[(std::path::PathBuf, &str)]) -> String {
+    let mut buf = String::new();
+    for (path, contract_hash) in entries {
+        use std::fmt::Write;
+        let _ = writeln!(buf, "{}\t{}", path.display(), contract_hash);
+    }
+    let mut hasher = Sha256::new();
+    hasher.update(buf.as_bytes());
+    format!("{:x}", hasher.finalize())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn bundle_hash_stable_and_order_dependent() {
+        let a = PathBuf::from("/a/c1.yaml");
+        let b = PathBuf::from("/b/c2.yaml");
+        let h1 = hash_contract_bundle(&[(a.clone(), "aaa"), (b.clone(), "bbb")]);
+        let h2 = hash_contract_bundle(&[(a.clone(), "aaa"), (b.clone(), "bbb")]);
+        assert_eq!(h1, h2);
+        let h3 = hash_contract_bundle(&[(b, "bbb"), (a, "aaa")]);
+        assert_ne!(h1, h3);
+    }
+}

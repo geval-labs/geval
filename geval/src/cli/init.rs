@@ -133,6 +133,12 @@ From the **project root**:
 geval check --contract {}/contract.yaml --signals {}/signals.json
 ```
 
+Multiple contracts (one PR, same signals):
+
+```bash
+geval check -c {}/contract.yaml -c path/to/other-contract.yaml --signals {}/signals.json
+```
+
 Explain:
 
 ```bash
@@ -143,6 +149,7 @@ Validate contract and all policies:
 
 ```bash
 geval validate-contract {}/contract.yaml
+geval validate-contract {}/contract.yaml path/to/other-contract.yaml
 ```
 
 ## Approve / reject
@@ -156,7 +163,7 @@ geval reject --reason "Needs more testing" --output {}/rejection.json
 
 Add these files to version control to share the contract with your team.
 "#,
-        dir_str, dir_str, dir_str, dir_str, dir_str, dir_str, dir_str
+        dir_str, dir_str, dir_str, dir_str, dir_str, dir_str, dir_str, dir_str, dir_str, dir_str
     )
 }
 

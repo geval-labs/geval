@@ -35,9 +35,12 @@ jobs:
         run: |
           ./geval/target/release/geval check \
             --contract contract.yaml \
+            --contract other-team/contract.yaml \
             --signals signals.json \
             --env prod
 ```
+
+Repeat `--contract` for each gate YAML attached to the PR. Optional: `--combine-contracts all_pass` (default) or `any_block_blocks`.
 
 ## Option B: Download released binary
 
@@ -57,6 +60,7 @@ Use when you rely on an official Geval release:
         run: |
           ./geval check \
             --contract contract.yaml \
+            --contract other-team/contract.yaml \
             --signals signals.json
 ```
 
@@ -72,7 +76,7 @@ Use these in a later step to fail the job on BLOCK or REQUIRE_APPROVAL if desire
       - name: Run Geval
         id: geval
         run: |
-          ./geval check --contract contract.yaml --signals signals.json --env prod
+          ./geval check --contract contract.yaml --contract other-team/contract.yaml --signals signals.json --env prod
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 ```
 
@@ -81,13 +85,13 @@ Then `if: steps.geval.outputs.exitcode == '0'` for merge gates.
 ## Post result to PR (GitHub CLI)
 
 ```bash
-RESULT=$(./geval check --contract contract.yaml --signals signals.json)
+RESULT=$(./geval check --contract contract.yaml --contract other-team/contract.yaml --signals signals.json)
 gh pr comment $PR_NUMBER --body "$RESULT"
 ```
 
 Or capture the explain output:
 
 ```bash
-RESULT=$(./geval explain --contract contract.yaml --signals signals.json)
+RESULT=$(./geval explain --contract contract.yaml --contract other-team/contract.yaml --signals signals.json)
 gh pr comment $PR_NUMBER --body "$RESULT"
 ```

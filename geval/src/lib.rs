@@ -19,14 +19,14 @@ pub mod signal_graph;
 pub mod signals;
 
 pub use approval::{ApprovalArtifact, ApprovalOutcome, read_approval, write_approval};
-pub use artifact::{write_decision_artifact, DECISION_ARTIFACT_VERSION};
+pub use artifact::{write_multi_contract_artifact, DECISION_ARTIFACT_VERSION};
 pub use contract::{
-    load_contract, load_contract_and_policies, run_contract, CombineRule, ContractDef, ContractResult,
-    PolicyRef, PolicyResult,
+    load_contract, load_contract_and_policies, load_run_contracts, run_contract, CombineRule,
+    ContractDef, ContractResult, ContractRunEntry, MultiContractRun, PolicyRef, PolicyResult,
 };
 pub use evaluator::{evaluate, Decision, DecisionOutcome};
 pub use explanation::explain_decision;
-pub use hashing::{hash_contract_content, hash_policy, hash_signals};
+pub use hashing::{hash_contract_bundle, hash_contract_content, hash_policy, hash_signals};
 pub use policy::{parse_policy, parse_policy_str, Policy, Rule};
 pub use signal_graph::SignalGraph;
 pub use signals::{load_signals, Signal, SignalSet};

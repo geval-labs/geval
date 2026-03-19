@@ -4,7 +4,7 @@ Geval is designed so **nothing is unversioned**: every decision and every action
 
 - **Why was this deployed?** – Decision report and matched rule (and optional approval reason).
 - **Who approved it?** – `geval approve` writes an artifact with `approved_by`, `reason`, and artifact `version`.
-- **What policy (contract) was used?** – Artifact stores `policy_name`, `policy_version`, and `policy_hash` (SHA256).
+- **What policy (contract) was used?** – Artifact stores each contract’s identity, `contract_hash`, per-policy hashes, and (v3) `bundle_hash` for the ordered set of contracts.
 - **What signals were used?** – Artifact stores `signals_name`, `signals_version`, and `signals_hash` (SHA256).
 - **Which Geval binary?** – Artifact stores `geval_version`.
 
@@ -17,17 +17,22 @@ Geval is designed so **nothing is unversioned**: every decision and every action
 Each `geval check` run writes:
 
 - **Path:** `.geval/decisions/<timestamp>.json`
-- **Contents (artifact_version 2, contract-centric):**
-  - `artifact_version` – schema version (e.g. `"2"`)
+- **Contents (artifact_version 3, multi-contract):**
+  - `artifact_version` – schema version (`"3"`)
   - `geval_version` – binary version that produced the decision
-  - `contract_name`, `contract_version`, `contract_hash` – contract identity and content hash
+  - `bundle_hash` – SHA256 over the ordered list of `(contract_path, contract_hash)` (audit the exact contract set)
+  - `contracts_combine_rule` – how each contract’s **combined** outcome was merged (e.g. `all_pass`, `any_block_blocks`)
+  - `contracts` – array of blocks, each with:
+    - `contract_path`, `contract_name`, `contract_version`, `contract_hash`
+    - `combine_rule` (policies within that contract)
+    - `policy_results` – `{ policy_path, policy_name?, policy_version?, policy_hash, outcome, matched_rule? }[]`
+    - `combined_decision`, `combined_matched_rule`, `combined_reason` (outcome for that contract)
+  - `overall_combined_decision`, `overall_matched_rule`, `overall_reason` – PR-level outcome after `contracts_combine_rule`
   - `signals_name`, `signals_version`, `signals_hash` – signals identity and content hash
-  - `combine_rule` – how policy outcomes were merged (e.g. `all_pass`, `any_block_blocks`)
-  - `policy_results` – array of `{ policy_path, policy_name?, policy_version?, policy_hash, outcome, matched_rule? }` for each policy
-  - `combined_decision` – final outcome (PASS | REQUIRE_APPROVAL | BLOCK)
-  - `combined_matched_rule` – first non-PASS policy and rule (if any)
   - `timestamp` – ISO8601
   - `approval` – optional; set when an approval is recorded for this decision
+
+Older tooling may still reference **artifact_version 2** (single flat contract); Geval now writes v3 only.
 
 ### Approval artifact
 

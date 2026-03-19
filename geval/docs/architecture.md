@@ -16,8 +16,9 @@ Geval is **contract-centric**: a **contract** is a named, versioned set of **pol
 1. **Load contract** – Parse contract YAML; resolve policy paths relative to the contract file; load each policy.
 2. **Load signals** – Parse signals JSON; build an in-memory signal graph (metric → value lookup).
 3. **Evaluate each policy** – For each policy, evaluate rules in priority order; first matching rule gives that policy’s outcome (PASS / REQUIRE_APPROVAL / BLOCK).
-4. **Combine** – Apply the contract’s combination rule to the list of policy outcomes → single combined decision.
-5. **Artifact** – Write `.geval/decisions/<timestamp>.json` with contract identity, per-policy results, combined decision, and hashes.
+4. **Combine (policies)** – Apply the contract’s combination rule to the list of policy outcomes → one combined decision **per contract**.
+5. **Combine (contracts)** – If multiple contract files are passed (`geval check -c a.yaml -c b.yaml`), apply **`--combine-contracts`** to each contract’s combined outcome → one **overall** PR-level decision (same rule vocabulary: `all_pass`, `any_block_blocks`).
+6. **Artifact** – Write `.geval/decisions/<timestamp>.json` (v3) with `bundle_hash`, each contract block, `contracts_combine_rule`, and overall outcome + hashes.
 
 ## Module layout
 
@@ -27,7 +28,7 @@ geval/src/
     model.rs      # ContractDef, PolicyRef
     combine.rs    # CombineRule (all_pass, any_block_blocks), apply_combine_rule
     loader.rs     # load_contract, load_contract_and_policies, parse_contract_str
-    runner.rs     # run_contract → ContractResult (per-policy + combined)
+    runner.rs     # run_contract, load_run_contracts → ContractResult / MultiContractRun
   policy/         # Single policy model and parser
     model.rs      # Policy, Rule, RuleCondition, RuleConsequence, Action, Operator
     parser.rs     # parse_policy, parse_policy_str
@@ -35,9 +36,9 @@ geval/src/
     engine.rs     # evaluate(policy, graph) → Decision; evaluate_with_trace
   signal_graph/   # Build lookup from signals for rule matching
   signals/        # Load signals JSON (name, version, signals array)
-  hashing/        # SHA256 for contract, policy, signals (audit)
-  artifact/       # Write decision artifact (contract + per-policy + combined)
-  explanation/    # Human-readable report (explain_contract_result, explain_decision)
+  hashing/        # SHA256 for contract, policy, signals, contract bundle (audit)
+  artifact/       # write_multi_contract_artifact (v3: multi-contract + overall)
+  explanation/    # explain_contract_result, explain_multi_contract_result, explain_decision
   approval/       # Approval/rejection artifact (versioned)
   cli/            # Commands: check, init, demo, explain, validate-contract, approve, reject
 ```
@@ -45,7 +46,7 @@ geval/src/
 ## Invariants
 
 - **Nothing unversioned** – Contract, policies, and signals have name/version; artifact records them and hashes.
-- **Deterministic** – Same contract + same signals → same combined decision.
+- **Deterministic** – Same contract set (order) + same signals → same overall decision.
 - **No remote calls** – All inputs and outputs are local files.
 
 ## Adding a new combination rule

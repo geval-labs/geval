@@ -39,6 +39,7 @@ jobs:
         run: |
           ./geval/target/release/geval check \
             --contract geval/examples/contract.yaml \
+            --contract geval/examples/contract-b.yaml \
             --signals signals.json \
             --env prod
         continue-on-error: true

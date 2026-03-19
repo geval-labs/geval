@@ -12,4 +12,6 @@ mod runner;
 pub use combine::{apply_combine_rule, CombineRule};
 pub use loader::{load_contract, load_contract_and_policies, parse_contract_str, resolve_policy_path};
 pub use model::{ContractDef, PolicyRef};
-pub use runner::{run_contract, ContractResult, PolicyResult};
+pub use runner::{
+    load_run_contracts, run_contract, ContractResult, ContractRunEntry, MultiContractRun, PolicyResult,
+};
