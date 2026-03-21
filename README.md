@@ -106,6 +106,8 @@ You can add labels like `component` or `system` if you need them. [Full example 
 
 A **contract** is a YAML file that lists one or more **policy** files and a **combination rule** (how to merge their outcomes). Each **policy** file contains ordered rules: **When** [condition on signals], **then** [pass / block / require_approval].
 
+**Prefer a form instead of writing YAML by hand?** Use **[config.geval.io](https://config.geval.io)** to generate Geval-compatible `contract.yaml` and policy files (download or copy), then validate with `geval validate-contract` and run `geval check` as below.
+
 Example contract — save as `contract.yaml`:
 
 ```yaml
@@ -232,6 +234,7 @@ Run with `./geval` (or ensure this repo’s binary is the one in your PATH):
 
 | Guide | Description |
 |-------|-------------|
+| [**Config generator (web)**](https://config.geval.io) | Fill in forms → download `contract.yaml` and policies |
 | [**Architecture**](geval/docs/architecture.md) | Contract = multiple policies + combine rule; module layout |
 | [**Signals and rules**](geval/docs/signals-and-rules.md) | Non-uniform signals (scores, presence-only, mix); how rules use them |
 | [**Signal assumptions**](geval/docs/signal-assumptions.md) | What we assume; what input forms we accept (number, string, trace, object) |
@@ -259,6 +262,7 @@ MIT © [Geval Contributors](https://github.com/geval-labs/geval/graphs/contribut
 
 <p align="center">
   <a href="https://geval.io">Website</a> •
+  <a href="https://config.geval.io">Config generator</a> •
   <a href="https://github.com/geval-labs/geval/releases">Releases</a> •
   <a href="https://github.com/geval-labs/geval">GitHub</a>
 </p>
