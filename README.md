@@ -242,6 +242,7 @@ Run with `./geval` (or ensure this repo’s binary is the one in your PATH):
 | [**Extending**](geval/docs/extending.md) | How to add a combination rule or change behavior; process and conventions |
 | [**GitHub Actions**](geval/docs/github-actions.md) | Use Geval in CI |
 | [**Examples**](geval/examples/README.md) | Sample data and rules files |
+| [**Customer demo (feature story)**](geval/docs/customer-demo-feature.md) | Signals, policies, rules, and PASS/BLOCK/approval narrative for demos |
 | [**Installation**](geval/docs/installation.md) | Install, PATH, build from source |
 | [**Developer workflow**](geval/docs/developer-workflow.md) | PRs, check, approve/reject |
 | [**Auditing**](geval/docs/auditing.md) | How decisions are recorded |
