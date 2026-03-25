@@ -237,7 +237,7 @@ pub fn print_demo_report(
     loading_then(&mut out, &loading1, &done1, DELAY_LOAD);
     line(&mut out, DELAY_LINE, &format!("  {}    {}", d(g.box_v), d("Environment:")));
     line(&mut out, DELAY_LINE, &format!("  {}    {}  {}", d(g.box_v), d("  "), environment.unwrap_or("(not set)")));
-    line(&mut out, DELAY_LINE, &format!("  {}    {}", d(g.box_v), d("Rules (evaluated in priority order):")));
+    line(&mut out, DELAY_LINE, &format!("  {}    {}", d(g.box_v), d("Rules (priority 1 = highest; each priority unique):")));
     for (i, rule) in policy.sorted_rules().iter().enumerate() {
         line(&mut out, DELAY_LINE, &format!("  {}    {}  {}. {}  {}  {}", d(g.box_v), d("  "), i + 1, magenta_s(&rule.name), d(g.arrow_act), d(action_str(rule.then.action))));
     }
@@ -256,7 +256,7 @@ pub fn print_demo_report(
 
     // Step 3: Rules
     let loading3 = format!("  {}  {}", green_s(g.step), d("Evaluating rules..."));
-    let done3 = format!("  {}  {}", green_s(g.step), b("Step 3: Evaluating rules (first match wins)"));
+    let done3 = format!("  {}  {}", green_s(g.step), b("Step 3: All rules checked; best priority wins"));
     loading_then(&mut out, &loading3, &done3, DELAY_LOAD);
     let traced_names: std::collections::HashSet<_> = trace.iter().map(|t| t.rule_name.as_str()).collect();
     let sorted = policy.sorted_rules();
@@ -307,8 +307,24 @@ pub fn print_demo_report(
         line(&mut out, DELAY_LINE, &format!("  {}    {}", d(g.box_v), d("")));
         line(&mut out, DELAY_LINE, &format!("  {}    {}  {}", d(g.box_v), d("Reason:"), reason));
     }
+    if !decision.matching_rules.is_empty() {
+        line(
+            &mut out,
+            DELAY_LINE,
+            &format!(
+                "  {}    {}  {}",
+                d(g.box_v),
+                d("Rules that matched:"),
+                decision.matching_rules.join(", ")
+            ),
+        );
+    }
     if let Some(ref name) = decision.matched_rule {
-        line(&mut out, DELAY_LINE, &format!("  {}    {}  {}", d(g.box_v), d("Matched rule:"), name));
+        line(
+            &mut out,
+            DELAY_LINE,
+            &format!("  {}    {}  {}", d(g.box_v), d("Winning rule (best priority):"), name),
+        );
     }
     line(&mut out, 0, "");
     let _ = out.flush();

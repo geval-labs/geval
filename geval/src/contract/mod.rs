@@ -1,7 +1,8 @@
 //! Contract: a named, versioned set of policies evaluated together with a combination rule.
 //!
 //! This is the core unit of evaluation in Geval. A contract references multiple policy files;
-//! each policy is evaluated against the same signals; outcomes are combined (e.g. all_pass, any_block_blocks)
+//! each policy is evaluated against the same signals; outcomes are merged with **worst_case**
+//! (BLOCK > REQUIRE_APPROVAL > PASS)
 //! into a single decision.
 
 mod combine;

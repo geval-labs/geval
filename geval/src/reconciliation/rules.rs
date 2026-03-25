@@ -1,8 +1,6 @@
 //! Reconciliation via priority rules only. No scoring or weights.
-//! The evaluator already evaluates rules in priority order; this module
-//! is a placeholder for any explicit reconciliation documentation or
-//! future extension (e.g. named reconciliation strategies).
-//! Actual behaviour: first matching rule wins; no match => PASS.
+//! The evaluator tests every rule, records all matches, and picks the **best priority**
+//! (**1** = highest); no match => PASS. This module is a placeholder for future extensions.
 
 use crate::evaluator::Decision;
 

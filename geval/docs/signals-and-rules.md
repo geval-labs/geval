@@ -32,6 +32,10 @@ So:
 - **Signals with scores** use the usual comparison operators. Example: “If `accuracy` &lt; 0.9 → block.”
 - You can combine both in one policy: some rules key off presence, others off numeric thresholds.
 
+### Priorities within a policy
+
+Each rule has a numeric **`priority`**. **Lower numbers are higher precedence: `1` is the highest.** Every priority must be **unique** within a policy (Geval rejects duplicate values when loading YAML). Geval evaluates **every** rule, records **all** that match, and the **winning** rule is the match with the **best** (numerically smallest) priority; that rule’s `then` action is the policy outcome.
+
 ## Example: mixed signals
 
 **signals.json:**

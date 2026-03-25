@@ -1,5 +1,4 @@
-# Geval Decision Check - run the Rust decision engine in CI
-# Use this workflow to evaluate signals against policy on pull requests.
+# Geval Decision Check - run `cargo test`, build release binary, evaluate example signals on PRs.
 
 name: Geval Decision Check
 
@@ -23,6 +22,9 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
         shell: bash
+
+      - name: Test Geval
+        run: cargo test --manifest-path geval/Cargo.toml
 
       - name: Build Geval
         run: cargo build --release --manifest-path geval/Cargo.toml

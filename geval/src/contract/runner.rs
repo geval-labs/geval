@@ -22,9 +22,11 @@ pub struct PolicyResult {
     pub policy_version: Option<String>,
     /// Outcome for this policy.
     pub outcome: DecisionOutcome,
-    /// Matched rule name (if any).
+    /// Winning rule name (if any): best priority among rules whose `when` matched.
     pub matched_rule: Option<String>,
-    /// Reason from the matched rule (if any).
+    /// All rule names whose `when` matched, in priority order (1 first).
+    pub matching_rules: Vec<String>,
+    /// Reason from the winning rule (if any).
     pub reason: Option<String>,
 }
 
@@ -79,6 +81,7 @@ pub fn run_contract(
             policy_version: policy.version.clone(),
             outcome: decision.outcome,
             matched_rule: decision.matched_rule.clone(),
+            matching_rules: decision.matching_rules.clone(),
             reason: decision.reason.clone(),
         });
     }
@@ -140,6 +143,7 @@ fn combined_decision_from_results(
             outcome: DecisionOutcome::Pass,
             matched_rule: None,
             reason: None,
+            matching_rules: Vec::new(),
         };
     }
     let first_non_pass = results.iter().find(|r| r.outcome != DecisionOutcome::Pass);
@@ -148,11 +152,13 @@ fn combined_decision_from_results(
             outcome,
             matched_rule: r.matched_rule.clone().map(|rule| format!("{}:{}", r.policy_path, rule)),
             reason: r.reason.clone(),
+            matching_rules: Vec::new(),
         },
         None => Decision {
             outcome,
             matched_rule: None,
             reason: None,
+            matching_rules: Vec::new(),
         },
     }
 }
@@ -167,6 +173,7 @@ fn overall_decision_from_contracts(
             outcome: DecisionOutcome::Pass,
             matched_rule: None,
             reason: None,
+            matching_rules: Vec::new(),
         };
     }
     let first_non_pass = entries
@@ -182,12 +189,14 @@ fn overall_decision_from_contracts(
                 outcome,
                 matched_rule,
                 reason: d.reason.clone(),
+                matching_rules: Vec::new(),
             }
         }
         None => Decision {
             outcome,
             matched_rule: None,
             reason: None,
+            matching_rules: Vec::new(),
         },
     }
 }
@@ -217,7 +226,7 @@ mod tests {
         let contract = ContractDef {
             name: "test".to_string(),
             version: "1.0".to_string(),
-            combine: CombineRule::AllPass,
+            combine: CombineRule::WorstCase,
             policies: vec![PolicyRef {
                 path: "p.yaml".to_string(),
             }],
@@ -241,15 +250,16 @@ rules:
         let result = run_contract(&contract, &[policy], &graph).unwrap();
         assert_eq!(result.policy_results.len(), 1);
         assert_eq!(result.policy_results[0].outcome, DecisionOutcome::Pass);
+        assert!(result.policy_results[0].matching_rules.is_empty());
         assert_eq!(result.combined_decision.outcome, DecisionOutcome::Pass);
     }
 
     #[test]
-    fn run_contract_two_policies_all_pass_combined_block() {
+    fn run_contract_two_policies_worst_case_combined_block() {
         let contract = ContractDef {
             name: "test".to_string(),
             version: "1.0".to_string(),
-            combine: CombineRule::AllPass,
+            combine: CombineRule::WorstCase,
             policies: vec![
                 PolicyRef {
                     path: "a.yaml".to_string(),
@@ -291,16 +301,18 @@ rules:
         let graph = SignalGraph::build(&signals.signals);
         let result = run_contract(&contract, &[policy_a, policy_b], &graph).unwrap();
         assert_eq!(result.policy_results[0].outcome, DecisionOutcome::Pass);
+        assert_eq!(result.policy_results[0].matching_rules, vec!["pass"]);
         assert_eq!(result.policy_results[1].outcome, DecisionOutcome::Block);
+        assert_eq!(result.policy_results[1].matching_rules, vec!["block_low"]);
         assert_eq!(result.combined_decision.outcome, DecisionOutcome::Block);
     }
 
     #[test]
-    fn run_contract_any_block_blocks() {
+    fn run_contract_worst_case_one_policy_block_merges() {
         let contract = ContractDef {
             name: "test".to_string(),
             version: "1.0".to_string(),
-            combine: CombineRule::AnyBlockBlocks,
+            combine: CombineRule::WorstCase,
             policies: vec![
                 PolicyRef {
                     path: "a.yaml".to_string(),
@@ -333,7 +345,7 @@ rules:
     }
 
     #[test]
-    fn load_run_contracts_two_all_pass_overall_pass() {
+    fn load_run_contracts_two_contracts_overall_pass() {
         let dir = tempfile::tempdir().unwrap();
         let p1 = dir.path().join("p1.yaml");
         let p2 = dir.path().join("p2.yaml");
@@ -372,7 +384,7 @@ rules:
             r#"
 name: c1
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: p1.yaml
 "#,
@@ -383,7 +395,7 @@ policies:
             r#"
 name: c2
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: p2.yaml
 "#,
@@ -395,7 +407,7 @@ policies:
         let run = load_run_contracts(
             &[c1, c2],
             &graph,
-            CombineRule::AllPass,
+            CombineRule::WorstCase,
         )
         .unwrap();
         assert_eq!(run.entries.len(), 2);
@@ -442,7 +454,7 @@ policies:
             r#"
 name: c1
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: p1.yaml
 "#,
@@ -453,7 +465,7 @@ policies:
             r#"
 name: c2
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: p2.yaml
 "#,
@@ -465,7 +477,7 @@ policies:
         let run = load_run_contracts(
             &[c1.clone(), c2],
             &graph,
-            CombineRule::AllPass,
+            CombineRule::WorstCase,
         )
         .unwrap();
         assert_eq!(run.overall.outcome, DecisionOutcome::Block);
@@ -473,7 +485,7 @@ policies:
     }
 
     #[test]
-    fn load_run_contracts_any_block_blocks_across_contracts() {
+    fn load_run_contracts_worst_case_across_two_contracts() {
         let dir = tempfile::tempdir().unwrap();
         let p1 = dir.path().join("p1.yaml");
         let p2 = dir.path().join("p2.yaml");
@@ -494,7 +506,7 @@ policies:
             r#"
 name: c1
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: p1.yaml
 "#,
@@ -505,7 +517,7 @@ policies:
             r#"
 name: c2
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: p2.yaml
 "#,
@@ -514,7 +526,7 @@ policies:
 
         let signals = SignalSet::new(vec![sig(None, "x", 1.0), sig(None, "y", 1.0)]);
         let graph = SignalGraph::build(&signals.signals);
-        let run = load_run_contracts(&[c1, c2], &graph, CombineRule::AnyBlockBlocks).unwrap();
+        let run = load_run_contracts(&[c1, c2], &graph, CombineRule::WorstCase).unwrap();
         assert_eq!(run.overall.outcome, DecisionOutcome::Pass);
 
         let signals_block = SignalSet::new(vec![sig(None, "x", 20.0), sig(None, "y", 1.0)]);
@@ -522,7 +534,7 @@ policies:
         let c1b = dir.path().join("contract1.yaml");
         let c2b = dir.path().join("contract2.yaml");
         let run_b =
-            load_run_contracts(&[c1b, c2b], &graph_b, CombineRule::AnyBlockBlocks).unwrap();
+            load_run_contracts(&[c1b, c2b], &graph_b, CombineRule::WorstCase).unwrap();
         assert_eq!(run_b.overall.outcome, DecisionOutcome::Block);
     }
 
@@ -530,13 +542,13 @@ policies:
     fn load_run_contracts_empty_paths_errors() {
         let signals = SignalSet::new(vec![sig(None, "x", 1.0)]);
         let graph = SignalGraph::build(&signals.signals);
-        let err = load_run_contracts(&[], &graph, CombineRule::AllPass).unwrap_err();
+        let err = load_run_contracts(&[], &graph, CombineRule::WorstCase).unwrap_err();
         assert!(err.to_string().contains("at least one contract"));
     }
 
-    /// all_pass across contracts: PASS + REQUIRE_APPROVAL → overall REQUIRE_APPROVAL (no BLOCK).
+    /// worst_case across contracts: PASS + REQUIRE_APPROVAL → overall REQUIRE_APPROVAL (no BLOCK).
     #[test]
-    fn load_run_contracts_all_pass_pass_and_require_approval_overall_require_approval() {
+    fn load_run_contracts_pass_and_require_approval_overall_require_approval() {
         let dir = tempfile::tempdir().unwrap();
         let p_ok = dir.path().join("ok.yaml");
         let p_appr = dir.path().join("appr.yaml");
@@ -574,7 +586,7 @@ policies:
             &c1,
             r#"name: gate-a
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: ok.yaml
 "#,
@@ -584,7 +596,7 @@ policies:
             &c2,
             r#"name: gate-b
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: appr.yaml
 "#,
@@ -594,7 +606,7 @@ policies:
         let signals = SignalSet::new(vec![sig(None, "x", 1.0), sig(None, "z", 0.5)]);
         let graph = SignalGraph::build(&signals.signals);
         let c2p = c2.clone();
-        let run = load_run_contracts(&[c1, c2], &graph, CombineRule::AllPass).unwrap();
+        let run = load_run_contracts(&[c1, c2], &graph, CombineRule::WorstCase).unwrap();
         assert_eq!(run.entries[0].result.combined_decision.outcome, DecisionOutcome::Pass);
         assert_eq!(
             run.entries[1].result.combined_decision.outcome,
@@ -633,7 +645,7 @@ policies:
             &c1,
             r#"name: first
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: ok.yaml
 "#,
@@ -643,7 +655,7 @@ policies:
             &c2,
             r#"name: second
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: blk.yaml
 "#,
@@ -652,14 +664,14 @@ policies:
 
         let signals = SignalSet::new(vec![sig(None, "x", 1.0), sig(None, "w", 1.0)]);
         let graph = SignalGraph::build(&signals.signals);
-        let run = load_run_contracts(&[c1, c2.clone()], &graph, CombineRule::AllPass).unwrap();
+        let run = load_run_contracts(&[c1, c2.clone()], &graph, CombineRule::WorstCase).unwrap();
         assert_eq!(run.overall.outcome, DecisionOutcome::Block);
         assert!(run.overall.matched_rule.unwrap().contains(c2.to_str().unwrap()));
     }
 
-    /// BLOCK in first contract wins over REQUIRE_APPROVAL in second under all_pass.
+    /// BLOCK in first contract wins over REQUIRE_APPROVAL in second (worst_case merge).
     #[test]
-    fn load_run_contracts_all_pass_block_before_require_approval_second_contract() {
+    fn load_run_contracts_block_wins_over_require_approval_across_contracts() {
         let dir = tempfile::tempdir().unwrap();
         let p_block = dir.path().join("blk.yaml");
         let p_appr = dir.path().join("appr.yaml");
@@ -679,7 +691,7 @@ policies:
             &c1,
             r#"name: blocks-first
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: blk.yaml
 "#,
@@ -689,7 +701,7 @@ policies:
             &c2,
             r#"name: appr-second
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: appr.yaml
 "#,
@@ -698,14 +710,14 @@ policies:
 
         let signals = SignalSet::new(vec![sig(None, "x", 20.0), sig(None, "z", 0.1)]);
         let graph = SignalGraph::build(&signals.signals);
-        let run = load_run_contracts(&[c1.clone(), c2], &graph, CombineRule::AllPass).unwrap();
+        let run = load_run_contracts(&[c1.clone(), c2], &graph, CombineRule::WorstCase).unwrap();
         assert_eq!(run.overall.outcome, DecisionOutcome::Block);
         assert!(run.overall.matched_rule.unwrap().contains(c1.to_str().unwrap()));
     }
 
-    /// any_block_blocks: no BLOCK anywhere → PASS + REQUIRE_APPROVAL → REQUIRE_APPROVAL.
+    /// No BLOCK anywhere → PASS + REQUIRE_APPROVAL → overall REQUIRE_APPROVAL.
     #[test]
-    fn load_run_contracts_any_block_blocks_pass_and_require_approval() {
+    fn load_run_contracts_pass_and_require_approval_overall_when_no_block() {
         let dir = tempfile::tempdir().unwrap();
         let p_ok = dir.path().join("ok.yaml");
         let p_appr = dir.path().join("appr.yaml");
@@ -725,7 +737,7 @@ policies:
             &c1,
             r#"name: a
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: ok.yaml
 "#,
@@ -735,7 +747,7 @@ policies:
             &c2,
             r#"name: b
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: appr.yaml
 "#,
@@ -744,12 +756,12 @@ policies:
 
         let signals = SignalSet::new(vec![sig(None, "x", 1.0), sig(None, "z", 0.1)]);
         let graph = SignalGraph::build(&signals.signals);
-        let run = load_run_contracts(&[c1, c2], &graph, CombineRule::AnyBlockBlocks).unwrap();
+        let run = load_run_contracts(&[c1, c2], &graph, CombineRule::WorstCase).unwrap();
         assert_eq!(run.overall.outcome, DecisionOutcome::RequireApproval);
     }
 
     #[test]
-    fn load_run_contracts_three_contracts_all_pass() {
+    fn load_run_contracts_three_contracts_overall_pass() {
         let dir = tempfile::tempdir().unwrap();
         for i in 1..=3 {
             let p = dir.path().join(format!("p{}.yaml", i));
@@ -779,7 +791,7 @@ policies:
                 format!(
                     r#"name: c{}
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: p{}.yaml
 "#,
@@ -795,12 +807,12 @@ policies:
             sig(None, "m3", 1.0),
         ]);
         let graph = SignalGraph::build(&signals.signals);
-        let run = load_run_contracts(&paths, &graph, CombineRule::AllPass).unwrap();
+        let run = load_run_contracts(&paths, &graph, CombineRule::WorstCase).unwrap();
         assert_eq!(run.entries.len(), 3);
         assert_eq!(run.overall.outcome, DecisionOutcome::Pass);
     }
 
-    /// One contract with two policies (internal all_pass); partner contract passes — overall pass.
+    /// One contract with two policies (internal worst_case); partner contract passes — overall pass.
     #[test]
     fn load_run_contracts_partner_passes_when_first_has_two_policies_internal_combine() {
         let dir = tempfile::tempdir().unwrap();
@@ -828,7 +840,7 @@ policies:
             &c_multi,
             r#"name: dual-policy-gate
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: pa.yaml
   - path: pb.yaml
@@ -839,7 +851,7 @@ policies:
             &c_single,
             r#"name: partner
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: partner.yaml
 "#,
@@ -852,7 +864,7 @@ policies:
             sig(None, "z", 1.0),
         ]);
         let graph = SignalGraph::build(&signals.signals);
-        let run = load_run_contracts(&[c_multi, c_single], &graph, CombineRule::AllPass).unwrap();
+        let run = load_run_contracts(&[c_multi, c_single], &graph, CombineRule::WorstCase).unwrap();
         assert_eq!(run.entries[0].result.policy_results.len(), 2);
         assert_eq!(run.overall.outcome, DecisionOutcome::Pass);
     }
@@ -873,7 +885,7 @@ policies:
             &c_first,
             r#"name: alpha
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: blk.yaml
 "#,
@@ -883,7 +895,7 @@ policies:
             &c_second,
             r#"name: beta
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: blk.yaml
 "#,
@@ -895,7 +907,7 @@ policies:
         let run_a_then_b = load_run_contracts(
             &[c_first.clone(), c_second.clone()],
             &graph,
-            CombineRule::AllPass,
+            CombineRule::WorstCase,
         )
         .unwrap();
         let rule_ab = run_a_then_b.overall.matched_rule.unwrap();
@@ -905,7 +917,7 @@ policies:
             rule_ab
         );
 
-        let run_b_then_a = load_run_contracts(&[c_second, c_first], &graph, CombineRule::AllPass).unwrap();
+        let run_b_then_a = load_run_contracts(&[c_second, c_first], &graph, CombineRule::WorstCase).unwrap();
         let rule_ba = run_b_then_a.overall.matched_rule.unwrap();
         assert!(
             rule_ba.contains("contract_beta"),

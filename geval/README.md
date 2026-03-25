@@ -16,7 +16,7 @@ See **[Installation](docs/installation.md)** for download links, build-from-sour
 ## Principles
 
 - **Local, deterministic** – single binary, no external services
-- **Rule-based** – priority-ordered rules; first match wins; no scoring or ML
+- **Rule-based** – unique priorities per policy (**1** = highest); all matches shown; best priority wins; no scoring or ML
 - **Auditable** – policy and signal hashes (SHA256), immutable decision artifacts
 
 ## Quick start

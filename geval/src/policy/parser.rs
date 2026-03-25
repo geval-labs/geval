@@ -32,30 +32,44 @@ struct PolicyInner {
     rules: Option<Vec<crate::policy::Rule>>,
 }
 
+fn validate_unique_rule_priorities(policy: &Policy) -> Result<()> {
+    let mut seen = std::collections::HashSet::new();
+    for rule in &policy.rules {
+        if !seen.insert(rule.priority) {
+            anyhow::bail!(
+                "duplicate rule priority {} in policy: each rule must have a unique priority (1 = highest precedence)",
+                rule.priority
+            );
+        }
+    }
+    Ok(())
+}
+
 fn parse_policy_yaml(s: &str) -> Result<Policy> {
     let _: serde_yaml::Value = serde_yaml::from_str(s).context("parse policy YAML")?;
     let wrapped: Option<PolicyFile> = serde_yaml::from_str(s).ok();
 
-    if let Some(f) = wrapped {
+    let policy = if let Some(f) = wrapped {
         if let Some(inner) = f.policy {
-            return Ok(Policy {
+            Policy {
                 name: inner.name.or(f.name),
                 version: inner.version.or(f.version),
                 environment: inner.environment.or(f.environment),
                 rules: inner.rules.unwrap_or_else(Vec::new),
-            });
+            }
+        } else {
+            Policy {
+                name: f.name,
+                version: f.version,
+                environment: f.environment,
+                rules: f.rules.unwrap_or_else(Vec::new),
+            }
         }
-        return Ok(Policy {
-            name: f.name,
-            version: f.version,
-            environment: f.environment,
-            rules: f.rules.unwrap_or_else(Vec::new),
-        });
-    }
-
-    // Direct policy shape
-    let p: Policy = serde_yaml::from_str(s).context("invalid policy structure")?;
-    Ok(p)
+    } else {
+        serde_yaml::from_str(s).context("invalid policy structure")?
+    };
+    validate_unique_rule_priorities(&policy)?;
+    Ok(policy)
 }
 
 /// Parse policy from a string (e.g. for tests or inline).
@@ -119,5 +133,31 @@ policy:
         assert_eq!(p.name.as_deref(), Some("release-gate"));
         assert_eq!(p.version.as_deref(), Some("2.1.0"));
         assert_eq!(p.rules.len(), 1);
+    }
+
+    #[test]
+    fn duplicate_priority_rejected() {
+        let yaml = r#"
+rules:
+  - priority: 1
+    name: a
+    when:
+      metric: x
+      operator: ">"
+      threshold: 0
+    then:
+      action: pass
+  - priority: 1
+    name: b
+    when:
+      metric: y
+      operator: ">"
+      threshold: 0
+    then:
+      action: block
+"#;
+        let err = parse_policy_str(yaml).unwrap_err();
+        let msg = format!("{err:#}");
+        assert!(msg.contains("duplicate rule priority"), "{}", msg);
     }
 }

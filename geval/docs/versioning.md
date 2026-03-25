@@ -14,7 +14,7 @@ Example:
 ```yaml
 name: release-gate
 version: "2.1.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: policies/security.yaml
   - path: policies/quality.yaml
