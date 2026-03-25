@@ -37,8 +37,7 @@ With the example data, the policy matches `business_block`: `engagement_drop` 0.
 
 - **name**, **version** – Identify the contract for audit; bump version when you change policies or combine rule.
 - **combine** – How to merge outcomes from multiple policies:
-  - **all_pass** – PASS only if every policy passes; any BLOCK → BLOCK; any REQUIRE_APPROVAL (no BLOCK) → REQUIRE_APPROVAL.
-  - **any_block_blocks** – Any policy BLOCK → overall BLOCK; else any REQUIRE_APPROVAL → REQUIRE_APPROVAL; else PASS.
+  - **worst_case** – Any BLOCK wins; else any REQUIRE_APPROVAL; else PASS.
 - **policies** – List of policy file paths (relative to the contract file): e.g. `policy.yaml` or `policies/security.yaml`.
 
 ## Policy format
@@ -46,9 +45,9 @@ With the example data, the policy matches `business_block`: `engagement_drop` 0.
 Each policy file has optional **name** and **version**, and **policy** with:
 
 - **environment** – optional.
-- **rules** – priority, name, when (metric, component, operator, threshold), then (action, reason).
+- **rules** – unique **priority** (**1** = highest), name, when (metric, component, operator, threshold), then (action, reason).
 
-First matching rule wins; no match → PASS.
+Every rule is evaluated; all matches are recorded; the **best** (lowest) priority wins; no match → PASS.
 
 ## Signals format
 

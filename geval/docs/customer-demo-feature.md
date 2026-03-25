@@ -32,7 +32,7 @@ These are **inputs** (your pipeline or eval harness writes one `signals.json` pe
 
 ## 3. Policies — meaningful split (and what to say)
 
-Use **separate policy files** so **ownership** is clear (security vs product vs business). The **contract** lists them and sets **`combine: all_pass`** so: *every policy must pass; any BLOCK wins; REQUIRE_APPROVAL without BLOCK means “needs a human”.*
+Use **separate policy files** so **ownership** is clear (security vs product vs business). The **contract** lists them and sets **`combine: worst_case`** so outcomes merge by severity: *any **BLOCK** wins; else any **REQUIRE_APPROVAL**; else **PASS**.*
 
 | Policy file | Owner (story) | Why separate |
 |-------------|---------------|--------------|
@@ -47,7 +47,7 @@ Use **separate policy files** so **ownership** is clear (security vs product vs 
 
 ## 4. Rules customers actually write (examples + why)
 
-Rules are **ordered**; **first match wins**. Priorities below are **intentional** (stop fast on catastrophes, then quality, then business).
+Rules use **unique** priorities (**`1`** = highest precedence). Geval shows **every** rule whose condition matched; the **winning** rule is the one with the **best** priority. The table below orders rules by priority on purpose (catastrophes first, then quality, then business).
 
 ### 4.1 `policies/safety.yaml`
 
@@ -78,7 +78,7 @@ Rules are **ordered**; **first match wins**. Priorities below are **intentional*
 ```yaml
 name: support-copilot-release-gate
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: policies/safety.yaml
   - path: policies/product_quality.yaml
@@ -86,7 +86,7 @@ policies:
 ```
 
 **Customer line:**  
-*`all_pass`* means: every policy must end in PASS for an overall PASS; any policy BLOCK → overall BLOCK; if no BLOCK but something needs approval → overall REQUIRE_APPROVAL.
+*`worst_case`* means: merge policy outcomes by severity — any **BLOCK** → overall **BLOCK**; else any **REQUIRE_APPROVAL** → overall **REQUIRE_APPROVAL**; else **PASS**.
 
 ---
 
@@ -94,8 +94,8 @@ policies:
 
 1. **CI (or a human) runs** your evals and **writes `signals.json`** with the metrics above (and optional `name` / `version` on the file for audit).
 2. **Geval loads** the contract → loads the three policies → builds a small **lookup** from signals.
-3. **Per policy**, rules run in **priority order**; the **first** rule whose `when` matches decides that policy’s outcome.
-4. **Per policy outcomes** are merged with the contract’s **`combine`** rule → **one** outcome for the run.
+3. **Per policy**, **every** rule is checked. **All** matches are listed; the rule with the **best** priority (**`1`** highest) **wins** and sets that policy’s outcome.
+4. **Per policy outcomes** are merged with **`worst_case`** (same severity order: BLOCK > REQUIRE_APPROVAL > PASS) → **one** outcome for the contract run.
 5. **Geval exits** with 0 / 1 / 2 and can write a **decision artifact** (who/what/when + hashes).
 
 **Customer line:**  

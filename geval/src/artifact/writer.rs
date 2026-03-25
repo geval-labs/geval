@@ -1,7 +1,7 @@
 //! Write decision artifacts to .geval/decisions/<timestamp>.json
 //!
-//! Multi-contract: artifact v3 records each contract (path, hashes, per-policy results) plus
-//! `contracts_combine_rule`, `bundle_hash`, and overall PR-level decision.
+//! Multi-contract: artifact v4 adds `matching_rules` per policy; `contracts_combine_rule` records
+//! the merge mode (typically `worst_case`).
 
 use crate::contract::MultiContractRun;
 use crate::evaluator::DecisionOutcome;
@@ -13,7 +13,7 @@ use std::path::Path;
 use crate::hashing::hash_contract_bundle;
 
 /// Schema version of the decision artifact format. Bump when the artifact shape changes.
-pub const DECISION_ARTIFACT_VERSION: &str = "3";
+pub const DECISION_ARTIFACT_VERSION: &str = "4";
 
 /// Per-policy result as stored in the artifact.
 #[derive(Debug, Serialize)]
@@ -27,6 +27,8 @@ pub struct PolicyResultRecord {
     pub outcome: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub matched_rule: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub matching_rules: Vec<String>,
 }
 
 /// One contract’s slice of the artifact (mirrors former v2 single-contract payload, nested).
@@ -45,7 +47,7 @@ pub struct ContractDecisionBlock {
     pub combined_reason: Option<String>,
 }
 
-/// Multi-contract decision artifact (v3).
+/// Multi-contract decision artifact (v4).
 #[derive(Debug, Serialize)]
 pub struct DecisionArtifactV3 {
     pub artifact_version: String,
@@ -89,6 +91,7 @@ fn policy_records_for_contract(
             policy_hash: hash.clone(),
             outcome: outcome_str(r.outcome).to_string(),
             matched_rule: r.matched_rule.clone(),
+            matching_rules: r.matching_rules.clone(),
         })
         .collect()
 }
@@ -200,7 +203,7 @@ mod tests {
             format!(
                 r#"name: {}
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: {}
 "#,
@@ -211,7 +214,7 @@ policies:
     }
 
     #[test]
-    fn write_multi_contract_artifact_is_valid_v3_json() {
+    fn write_multi_contract_artifact_is_valid_v4_json() {
         let dir = tempfile::tempdir().unwrap();
         minimal_pass_contract(dir.path(), "a", "ca.yaml", "pa.yaml");
         minimal_pass_contract(dir.path(), "b", "cb.yaml", "pb.yaml");
@@ -220,7 +223,7 @@ policies:
 
         let signals = SignalSet::new(vec![sig("x", 1.0)]);
         let graph = SignalGraph::build(&signals.signals);
-        let run = load_run_contracts(&[c1, c2], &graph, CombineRule::AllPass).unwrap();
+        let run = load_run_contracts(&[c1, c2], &graph, CombineRule::WorstCase).unwrap();
 
         let out_dir = tempfile::tempdir().unwrap();
         let path = write_multi_contract_artifact(
@@ -235,8 +238,8 @@ policies:
 
         let json = std::fs::read_to_string(&path).unwrap();
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
-        assert_eq!(v["artifact_version"], "3");
-        assert_eq!(v["contracts_combine_rule"], "all_pass");
+        assert_eq!(v["artifact_version"], "4");
+        assert_eq!(v["contracts_combine_rule"], "worst_case");
         assert_eq!(v["overall_combined_decision"], "PASS");
         assert!(v["bundle_hash"].as_str().unwrap().len() == 64);
         assert_eq!(v["contracts"].as_array().unwrap().len(), 2);
@@ -268,7 +271,7 @@ policies:
             &c,
             r#"name: solo
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: policy.yaml
 "#,
@@ -277,7 +280,7 @@ policies:
 
         let signals = SignalSet::new(vec![sig("x", 99.0)]);
         let graph = SignalGraph::build(&signals.signals);
-        let run = load_run_contracts(&[c], &graph, CombineRule::AllPass).unwrap();
+        let run = load_run_contracts(&[c], &graph, CombineRule::WorstCase).unwrap();
         assert_eq!(run.entries.len(), 1);
 
         let out_dir = tempfile::tempdir().unwrap();
@@ -289,6 +292,10 @@ policies:
         let pr = contracts[0]["policy_results"].as_array().unwrap();
         assert_eq!(pr.len(), 1);
         assert_eq!(pr[0]["outcome"], "BLOCK");
+        assert_eq!(
+            pr[0]["matching_rules"].as_array().unwrap()[0].as_str().unwrap(),
+            "block_x"
+        );
         assert_eq!(v["overall_combined_decision"], "BLOCK");
     }
 
@@ -299,7 +306,7 @@ policies:
         let c = dir.path().join("c.yaml");
         let signals = SignalSet::new(vec![sig("x", 1.0)]);
         let graph = SignalGraph::build(&signals.signals);
-        let run = load_run_contracts(&[c], &graph, CombineRule::AllPass).unwrap();
+        let run = load_run_contracts(&[c], &graph, CombineRule::WorstCase).unwrap();
         let out_dir = tempfile::tempdir().unwrap();
         let approval = ApprovalPayload {
             approved_by: "alice".to_string(),

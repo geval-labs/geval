@@ -25,11 +25,17 @@ pub fn explain_contract_result(
     }
     out.push_str("\nPer-policy results:\n");
     for r in &result.policy_results {
-        let match_info = r
-            .matched_rule
-            .as_ref()
-            .map(|m| format!(" (matched: {})", m))
-            .unwrap_or_default();
+        let mut match_info = String::new();
+        if !r.matching_rules.is_empty() {
+            let _ = write!(
+                match_info,
+                " (rules that matched: {})",
+                r.matching_rules.join(", ")
+            );
+        }
+        if let Some(m) = &r.matched_rule {
+            let _ = write!(match_info, " [winner: {}]", m);
+        }
         let _ = writeln!(
             out,
             "  {}: {}{}",
@@ -83,11 +89,17 @@ pub fn explain_multi_contract_result(
         let _ = writeln!(out, "Combine rule (policies): {}", result.combine_rule);
         out.push_str("Per-policy results:\n");
         for r in &result.policy_results {
-            let match_info = r
-                .matched_rule
-                .as_ref()
-                .map(|m| format!(" (matched: {})", m))
-                .unwrap_or_default();
+            let mut match_info = String::new();
+            if !r.matching_rules.is_empty() {
+                let _ = write!(
+                    match_info,
+                    " (rules that matched: {})",
+                    r.matching_rules.join(", ")
+                );
+            }
+            if let Some(m) = &r.matched_rule {
+                let _ = write!(match_info, " [winner: {}]", m);
+            }
             let _ = writeln!(
                 out,
                 "  {}: {}{}",
@@ -141,11 +153,17 @@ pub fn explain_decision(
         let _ = writeln!(out, "  {} = {}", label, value_str);
     }
 
-    out.push_str("\nMatched Rule:\n");
-    if let Some(ref name) = decision.matched_rule {
-        let _ = writeln!(out, "{}", name);
+    if !decision.matching_rules.is_empty() {
+        out.push_str("\nRules that matched (priority order, 1 = highest):\n");
+        for name in &decision.matching_rules {
+            let _ = writeln!(out, "  {}", name);
+        }
+        out.push_str("Winning rule (best priority):\n");
+        if let Some(ref name) = decision.matched_rule {
+            let _ = writeln!(out, "  {}", name);
+        }
     } else {
-        out.push_str("(none — default PASS)\n");
+        out.push_str("\nMatched rules:\n(none — default PASS)\n");
     }
 
     out.push_str("\nDecision:\n");
@@ -232,7 +250,7 @@ mod tests {
                 format!(
                     r#"name: {}
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: p.yaml
 "#,
@@ -243,12 +261,14 @@ policies:
         }
         let signals = SignalSet::new(vec![sig("x", 1.0)]);
         let graph = SignalGraph::build(&signals.signals);
-        let run = load_run_contracts(&[c1, c2], &graph, CombineRule::AllPass).unwrap();
+        let run = load_run_contracts(&[c1, c2], &graph, CombineRule::WorstCase).unwrap();
         let text = explain_multi_contract_result(&run, &graph, None);
         assert!(text.contains("MULTI-CONTRACT"));
         assert!(text.contains("Combine contracts rule"));
         assert!(text.contains("OVERALL (PR)"));
         assert!(text.contains("PASS"));
         assert!(text.contains("Contract file:"));
+        assert!(text.contains("rules that matched"));
+        assert!(text.contains("[winner:"));
     }
 }

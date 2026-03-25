@@ -1,4 +1,6 @@
-//! Evaluation engine: for each rule in priority order, if rule matches signal graph then return that decision; else PASS.
+//! Evaluation engine: every rule is checked against the signal graph; **all** matches are recorded,
+//! and the **winning** rule is the one with the **best** priority (**1** = highest; larger numbers are lower).
+//! If no rule matches, the policy outcome is PASS.
 
 use crate::policy::{Action, Operator, Policy, Rule};
 use crate::signal_graph::SignalGraph;
@@ -35,8 +37,12 @@ pub enum DecisionOutcome {
 #[derive(Debug, Clone, Serialize)]
 pub struct Decision {
     pub outcome: DecisionOutcome,
+    /// Winning rule name (best priority among those whose `when` matched).
     pub matched_rule: Option<String>,
     pub reason: Option<String>,
+    /// Names of all rules whose `when` matched, in **priority order** (ascending; 1 first).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub matching_rules: Vec<String>,
 }
 
 impl Decision {
@@ -45,12 +51,13 @@ impl Decision {
             outcome: DecisionOutcome::Pass,
             matched_rule: None,
             reason: None,
+            matching_rules: Vec::new(),
         }
     }
 }
 
-/// Evaluate policy against signal graph. Rules are evaluated in priority order;
-/// first matching rule determines the decision. If no rule matches, return PASS.
+/// Evaluate policy against the signal graph. Every rule is tested; the outcome comes from the
+/// matching rule with the **smallest** `priority` number (**1** = highest precedence).
 pub fn evaluate(policy: &Policy, graph: &SignalGraph) -> Decision {
     let (decision, _) = evaluate_with_trace(policy, graph);
     decision
@@ -59,6 +66,7 @@ pub fn evaluate(policy: &Policy, graph: &SignalGraph) -> Decision {
 /// Like evaluate, but also returns a trace of each rule evaluation for display.
 pub fn evaluate_with_trace(policy: &Policy, graph: &SignalGraph) -> (Decision, Vec<RuleTrace>) {
     let mut trace = Vec::new();
+    let mut matching_rules = Vec::new();
     for rule in policy.sorted_rules() {
         let (matched, condition, signal_value, _threshold) = rule_match_detail(rule, graph);
         trace.push(RuleTrace {
@@ -75,22 +83,29 @@ pub fn evaluate_with_trace(policy: &Policy, graph: &SignalGraph) -> (Decision, V
             reason: rule.then.reason.clone(),
         });
         if matched {
-            let outcome = match rule.then.action {
-                Action::Pass => DecisionOutcome::Pass,
-                Action::Block => DecisionOutcome::Block,
-                Action::RequireApproval => DecisionOutcome::RequireApproval,
-            };
-            return (
-                Decision {
-                    outcome,
-                    matched_rule: Some(rule.name.clone()),
-                    reason: rule.then.reason.clone(),
-                },
-                trace,
-            );
+            matching_rules.push(rule.name.clone());
         }
     }
-    (Decision::pass(), trace)
+    let winner = trace
+        .iter()
+        .filter(|t| t.matched)
+        .min_by_key(|t| t.priority);
+    let decision = if let Some(t) = winner {
+        let outcome = match t.action {
+            Action::Pass => DecisionOutcome::Pass,
+            Action::Block => DecisionOutcome::Block,
+            Action::RequireApproval => DecisionOutcome::RequireApproval,
+        };
+        Decision {
+            outcome,
+            matched_rule: Some(t.rule_name.clone()),
+            reason: t.reason.clone(),
+            matching_rules,
+        }
+    } else {
+        Decision::pass()
+    };
+    (decision, trace)
 }
 
 /// Returns (matched, condition_string, signal_value, threshold).
@@ -218,10 +233,11 @@ rules:
         let d = evaluate(&policy, &graph);
         assert_eq!(d.outcome, DecisionOutcome::Pass);
         assert!(d.matched_rule.is_none());
+        assert!(d.matching_rules.is_empty());
     }
 
     #[test]
-    fn test_first_matching_rule_wins() {
+    fn test_best_priority_wins_when_multiple_rules_match() {
         let policy = parse_policy_str(
             r#"
 rules:
@@ -252,9 +268,10 @@ rules:
         ]);
         let graph = SignalGraph::build(&signals.signals);
         let d = evaluate(&policy, &graph);
-        // Priority 1 matches first: hallucination_guard
+        // Priority 1 beats 2: both can match, hallucination wins
         assert_eq!(d.outcome, DecisionOutcome::Block);
         assert_eq!(d.matched_rule.as_deref(), Some("hallucination"));
+        assert_eq!(d.matching_rules, vec!["hallucination", "retrieval"]);
     }
 
     #[test]
@@ -288,8 +305,43 @@ rules:
         ]);
         let graph = SignalGraph::build(&signals.signals);
         let d = evaluate(&policy, &graph);
-        // First rule matches: human_reviewed is present (even without a score).
+        // Priority 1 matches: human_reviewed is present (even without a score).
         assert_eq!(d.outcome, DecisionOutcome::RequireApproval);
         assert_eq!(d.matched_rule.as_deref(), Some("require_human_review"));
+        assert_eq!(d.matching_rules, vec!["require_human_review"]);
+    }
+
+    #[test]
+    fn test_all_matches_recorded_best_priority_wins() {
+        let policy = parse_policy_str(
+            r#"
+rules:
+  - priority: 5
+    name: would_block
+    when:
+      metric: x
+      operator: ">"
+      threshold: 0
+    then:
+      action: block
+  - priority: 2
+    name: wins_pass
+    when:
+      metric: x
+      operator: ">"
+      threshold: 0
+    then:
+      action: pass
+"#,
+        )
+        .unwrap();
+        let signals = SignalSet::new(vec![sig(None, "x", 1.0)]);
+        let graph = SignalGraph::build(&signals.signals);
+        let (d, trace) = evaluate_with_trace(&policy, &graph);
+        assert_eq!(d.outcome, DecisionOutcome::Pass);
+        assert_eq!(d.matched_rule.as_deref(), Some("wins_pass"));
+        assert_eq!(d.matching_rules, vec!["wins_pass", "would_block"]);
+        let matched_names: Vec<_> = trace.iter().filter(|t| t.matched).map(|t| t.rule_name.as_str()).collect();
+        assert_eq!(matched_names, vec!["wins_pass", "would_block"]);
     }
 }

@@ -1,6 +1,6 @@
 # Second example contract: same policy file, distinct contract identity (multi-contract PR demo).
 name: demo-secondary
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: policy.yaml

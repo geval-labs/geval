@@ -82,7 +82,7 @@ mod tests {
         let yaml = r#"
 name: release-gate
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: security.yaml
   - path: quality.yaml
@@ -90,9 +90,23 @@ policies:
         let c = parse_contract_str(yaml).unwrap();
         assert_eq!(c.name, "release-gate");
         assert_eq!(c.version, "1.0.0");
+        assert_eq!(c.combine, crate::contract::CombineRule::WorstCase);
         assert_eq!(c.policies.len(), 2);
         assert_eq!(c.policies[0].path, "security.yaml");
         assert_eq!(c.policies[1].path, "quality.yaml");
+    }
+
+    #[test]
+    fn parse_contract_all_pass_spelling_deserializes_as_worst_case() {
+        let yaml = r#"
+name: alt-spelling
+version: "1.0.0"
+combine: all_pass
+policies:
+  - path: p.yaml
+"#;
+        let c = parse_contract_str(yaml).unwrap();
+        assert_eq!(c.combine, crate::contract::CombineRule::WorstCase);
     }
 
     #[test]
@@ -115,6 +129,6 @@ policies:
   - path: single.yaml
 "#;
         let c = parse_contract_str(yaml).unwrap();
-        assert_eq!(c.combine, crate::contract::CombineRule::AllPass);
+        assert_eq!(c.combine, crate::contract::CombineRule::WorstCase);
     }
 }

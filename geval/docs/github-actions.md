@@ -40,7 +40,7 @@ jobs:
             --env prod
 ```
 
-Repeat `--contract` for each gate YAML attached to the PR. Optional: `--combine-contracts all_pass` (default) or `any_block_blocks`.
+Repeat `--contract` for each gate YAML attached to the PR. Optional: `--combine-contracts worst_case` (default).
 
 ## Option B: Download released binary
 

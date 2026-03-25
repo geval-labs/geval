@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Geval is a **decision orchestration and reconciliation** tool for AI systems. It consumes **signals** (JSON) and **policy** (YAML), evaluates rules in priority order, and produces a deterministic decision: **PASS**, **REQUIRE_APPROVAL**, or **BLOCK**. It does not run evals, call APIs, or compute metrics—it only reconciles your rules against your signals.
+Geval is a **decision orchestration and reconciliation** tool for AI systems. It consumes **signals** (JSON) and **policy** (YAML), evaluates **all** rules (unique priorities; **1** = highest), surfaces every match, applies the **best-priority** winner per policy, and merges policies/contracts with **`worst_case`** (BLOCK > REQUIRE_APPROVAL > PASS). It does not run evals, call APIs, or compute metrics—it only reconciles your rules against your signals.
 
 **Core Philosophy**: Geval has no “brain.” You provide signals and rules; Geval applies the rules and returns one outcome. Same inputs + same policy = same outcome.
 

@@ -40,11 +40,11 @@ const SIGNALS_TEMPLATE: &str = r#"{
 
 const CONTRACT_TEMPLATE: &str = r#"# Geval contract: multiple policies evaluated together.
 # name + version identify this contract; bump version when you add/remove policies or change combine.
-# combine: all_pass = PASS only if every policy passes; any_block_blocks = any BLOCK → overall BLOCK.
+# combine: worst_case merges outcomes by severity — BLOCK > REQUIRE_APPROVAL > PASS.
 
 name: release-gate
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: policies/security.yaml
   - path: policies/quality.yaml
@@ -120,10 +120,9 @@ Created by `geval init`. Edit the files in this folder and run Geval from your p
 - **policies/** — Policy files (e.g. security.yaml, quality.yaml). Each has name, version, and rules. Paths in contract are relative to the contract file.
 - **signals.json** — Your data (metrics, scores). Set name and version; bump version when the pipeline or schema changes.
 
-## Combine rules
+## Combine rule (`combine`)
 
-- **all_pass** — Overall PASS only if every policy returns PASS; any BLOCK → BLOCK; any REQUIRE_APPROVAL (and no BLOCK) → REQUIRE_APPROVAL.
-- **any_block_blocks** — Any policy BLOCK → overall BLOCK; else any REQUIRE_APPROVAL → REQUIRE_APPROVAL; else PASS.
+- **worst_case** — Merge by severity: any **BLOCK** wins; else any **REQUIRE_APPROVAL**; else **PASS**.
 
 ## Run
 

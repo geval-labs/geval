@@ -78,7 +78,8 @@ pub struct RuleConsequence {
     pub reason: Option<String>,
 }
 
-/// A single policy rule: priority (lower = evaluated first), name, when, then.
+/// A single policy rule: **priority** (**1** = highest precedence; larger numbers are lower), name, when, then.
+/// Priorities must be **unique** within a policy (enforced when loading YAML).
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Rule {
     pub priority: u32,
@@ -103,7 +104,7 @@ pub struct Policy {
 }
 
 impl Policy {
-    /// Rules sorted by priority (ascending); first match wins.
+    /// Rules sorted by priority (ascending) for stable evaluation order.
     pub fn sorted_rules(&self) -> Vec<&Rule> {
         let mut r: Vec<&Rule> = self.rules.iter().collect();
         r.sort_by_key(|x| x.priority);

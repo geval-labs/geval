@@ -104,7 +104,7 @@ You can add labels like `component` or `system` if you need them. [Full example 
 
 ### Step 2: Your contract and policies
 
-A **contract** is a YAML file that lists one or more **policy** files and a **combination rule** (how to merge their outcomes). Each **policy** file contains ordered rules: **When** [condition on signals], **then** [pass / block / require_approval].
+A **contract** is a YAML file that lists one or more **policy** files and a **combination rule** (how to merge their outcomes). Each **policy** file contains rules with **unique** priorities: **When** [condition on signals], **then** [pass / block / require_approval].
 
 **Prefer a form instead of writing YAML by hand?** Use **[config.geval.io](https://config.geval.io)** to generate Geval-compatible `contract.yaml` and policy files (download or copy), then validate with `geval validate-contract` and run `geval check` as below.
 
@@ -113,7 +113,7 @@ Example contract — save as `contract.yaml`:
 ```yaml
 name: my-gate
 version: "1.0.0"
-combine: all_pass
+combine: worst_case
 policies:
   - path: policy.yaml
 ```
@@ -143,7 +143,7 @@ policy:
         action: pass
 ```
 
-**Combine rules:** `all_pass` = PASS only if every policy passes; `any_block_blocks` = any policy BLOCK → overall BLOCK. **Operators:** `>`, `<`, `>=`, `<=`, `==`, `presence`. **Actions:** `pass`, `block`, `require_approval`.
+**Combine (`worst_case`):** any **BLOCK** wins; else any **require_approval**; else **pass**. **Rule priorities** must be **unique** per policy; **1** = highest; Geval records every match and the **best** priority wins. **Operators:** `>`, `<`, `>=`, `<=`, `==`, `presence`. **Actions:** `pass`, `block`, `require_approval`.
 
 [Full example →](geval/examples/contract.yaml) and [policy →](geval/examples/policy.yaml)
 

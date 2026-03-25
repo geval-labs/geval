@@ -118,10 +118,10 @@ pub struct CheckOpts {
     /// Contract YAML file(s); repeat for multiple contracts on one PR.
     #[arg(long, short = 'c', action = clap::ArgAction::Append, required = true)]
     pub contract: Vec<PathBuf>,
-    /// How to merge each contract’s combined outcome (default: all must pass).
+    /// How to merge each contract’s combined outcome (default: worst_case — BLOCK > REQUIRE_APPROVAL > PASS).
     #[arg(
         long = "combine-contracts",
-        default_value = "all_pass",
+        default_value = "worst_case",
         value_parser = parse_combine_rule
     )]
     pub combine_contracts: CombineRule,
@@ -159,7 +159,7 @@ pub struct ExplainOpts {
     pub contract: Vec<PathBuf>,
     #[arg(
         long = "combine-contracts",
-        default_value = "all_pass",
+        default_value = "worst_case",
         value_parser = parse_combine_rule
     )]
     pub combine_contracts: CombineRule,
@@ -230,7 +230,7 @@ fn run_demo(opts: &DemoOpts) -> Result<()> {
     let contract = ContractDef {
         name: "demo".to_string(),
         version: "1.0.0".to_string(),
-        combine: CombineRule::AllPass,
+        combine: CombineRule::WorstCase,
         policies: vec![PolicyRef {
             path: "demo.yaml".to_string(),
         }],
@@ -246,6 +246,7 @@ fn run_demo(opts: &DemoOpts) -> Result<()> {
                 "policy_path": r.policy_path,
                 "outcome": outcome_str(r.outcome),
                 "matched_rule": r.matched_rule,
+                "matching_rules": r.matching_rules,
             })).collect::<Vec<_>>(),
         });
         println!("{}", serde_json::to_string_pretty(&out)?);
@@ -301,6 +302,7 @@ fn run_check(opts: &CheckOpts) -> Result<()> {
                     "policy_path": r.policy_path,
                     "outcome": outcome_str(r.outcome),
                     "matched_rule": r.matched_rule,
+                    "matching_rules": r.matching_rules,
                 })).collect::<Vec<_>>(),
                 "combined_decision": outcome_str(e.result.combined_decision.outcome),
             })).collect::<Vec<_>>(),

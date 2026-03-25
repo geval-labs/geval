@@ -45,15 +45,11 @@ Run: `cargo test --manifest-path geval/Cargo.toml`.
 - Bump version in `geval/Cargo.toml` and, if needed, `DECISION_ARTIFACT_VERSION` or `APPROVAL_ARTIFACT_VERSION`.
 - Note breaking changes (e.g. CLI now requires `--contract` instead of `--policy`) in release notes.
 
-## Adding a new combination rule
+## Combination rules
 
-1. **contract/combine.rs**
-   - Add a variant to `CombineRule` with `#[serde(rename = "snake_case")]` (or explicit rename).
-   - Implement `Default` if it should be the default when omitted in YAML.
-   - In `apply_combine_rule`, add a `match` branch that implements the new semantics.
-   - Implement `Display` and `FromStr` for CLI/artifact string.
-2. **Tests** – Add tests in `contract/combine::tests` for the new rule (e.g. N outcomes → expected combined outcome).
-3. **Docs** – Update [signals-and-rules.md](signals-and-rules.md) or [versioning.md](versioning.md) to describe the new rule.
+Today there is **one** merge semantics: **`worst_case`** (BLOCK > REQUIRE_APPROVAL > PASS), implemented in `contract/combine.rs`.
+
+To add a **different** combination mode in the future: add a `CombineRule` variant, implement it in `apply_combine_rule`, extend `Display` / `FromStr`, add tests, and bump `DECISION_ARTIFACT_VERSION` if artifact strings change.
 
 ## Adding a new policy or contract field
 

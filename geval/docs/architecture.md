@@ -36,7 +36,7 @@ Geval is the **thin layer** that sits between **evidence** (signals) and **polic
 
 ```mermaid
 flowchart LR
-  subgraph legacyBefore [Before Geval]
+  subgraph beforeGeval [Before Geval]
     direction TB
     mixed[Non-uniform signals — numbers flags presence labels components AB KPIs]
     discuss[Slack and meetings — people interpret and debate]
@@ -244,16 +244,16 @@ flowchart TB
 | **Contract** | YAML file: `name`, `version`, `combine` (rule), and list of policy paths. The unit of evaluation. |
 | **Policy** | YAML file: optional `name`/`version`, `environment`, and ordered `rules`. Each rule has `when` (conditions) and `then` (action: pass / block / require_approval). |
 | **Signals** | JSON: optional `name`/`version`, and array of signal objects (metric, value, component, etc.). Facts fed into the engine. |
-| **Combination rule** | How to merge outcomes from multiple policies: `all_pass` or `any_block_blocks`. |
+| **Combination rule** | How to merge outcomes from multiple policies/contracts: **`worst_case`** — BLOCK > REQUIRE_APPROVAL > PASS. |
 
 ## Data flow
 
 1. **Load contract** – Parse contract YAML; resolve policy paths relative to the contract file; load each policy.
 2. **Load signals** – Parse signals JSON; build an in-memory signal graph (metric → value lookup).
-3. **Evaluate each policy** – For each policy, evaluate rules in priority order; first matching rule gives that policy’s outcome (PASS / REQUIRE_APPROVAL / BLOCK).
-4. **Combine (policies)** – Apply the contract’s combination rule to the list of policy outcomes → one combined decision **per contract**.
-5. **Combine (contracts)** – If multiple contract files are passed (`geval check -c a.yaml -c b.yaml`), apply **`--combine-contracts`** to each contract’s combined outcome → one **overall** PR-level decision (same rule vocabulary: `all_pass`, `any_block_blocks`).
-6. **Artifact** – Write `.geval/decisions/<timestamp>.json` (v3) with `bundle_hash`, each contract block, `contracts_combine_rule`, and overall outcome + hashes.
+3. **Evaluate each policy** – For each policy, **every** rule is checked against the signal graph. **All** matches are recorded; the **winning** rule is the one with the **best** priority (**1** = highest; larger numbers are lower). That rule’s action is the policy outcome (PASS / REQUIRE_APPROVAL / BLOCK). **Priorities must be unique** within a policy (validated at load).
+4. **Combine (policies)** – Apply **`worst_case`** merging to the list of policy outcomes → one combined decision **per contract**.
+5. **Combine (contracts)** – If multiple contract files are passed (`geval check -c a.yaml -c b.yaml`), apply **`--combine-contracts`** (same **`worst_case`** semantics) to each contract’s combined outcome → one **overall** PR-level decision.
+6. **Artifact** – Write `.geval/decisions/<timestamp>.json` (v4) with `bundle_hash`, each contract block, `contracts_combine_rule`, per-policy `matching_rules`, and overall outcome + hashes.
 
 ## Module layout
 
@@ -261,7 +261,7 @@ flowchart TB
 geval/src/
   contract/       # Contract = multiple policies + combine rule
     model.rs      # ContractDef, PolicyRef
-    combine.rs    # CombineRule (all_pass, any_block_blocks), apply_combine_rule
+    combine.rs    # CombineRule (worst_case), apply_combine_rule
     loader.rs     # load_contract, load_contract_and_policies, parse_contract_str
     runner.rs     # run_contract, load_run_contracts → ContractResult / MultiContractRun
   policy/         # Single policy model and parser
@@ -272,7 +272,7 @@ geval/src/
   signal_graph/   # Build lookup from signals for rule matching
   signals/        # Load signals JSON (name, version, signals array)
   hashing/        # SHA256 for contract, policy, signals, contract bundle (audit)
-  artifact/       # write_multi_contract_artifact (v3: multi-contract + overall)
+  artifact/       # write_multi_contract_artifact (v4: multi-contract + overall)
   explanation/    # explain_contract_result, explain_multi_contract_result, explain_decision
   approval/       # Approval/rejection artifact (versioned)
   cli/            # Commands: check, init, demo, explain, validate-contract, approve, reject
