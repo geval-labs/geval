@@ -60,10 +60,10 @@ Inside your project (your codebase is not changed except for one new folder), ru
 
 This creates a **.geval** folder with:
 
-- **contract.yaml** — Contract: name, version, combine rule, and list of policy paths.
-- **policies/** — Policy files (e.g. security.yaml, quality.yaml). Edit and add rules.
-- **signals.json** — Sample signals. Edit and add yours.
-- **README.md** — How to run from here.
+- **contract.yaml** — Names your release gate, versions it, and lists policy files to evaluate.
+- **policies/** — Two starter files with descriptive names (`safety-and-blocking.yaml`, `quality-and-approval.yaml`); edit rules to match your metrics.
+- **signals.json** — Example pipeline metrics; replace with your real signal names and values.
+- **README.md** — What each file is for and how to run checks.
 
 Then run:
 

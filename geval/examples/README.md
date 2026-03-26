@@ -38,7 +38,7 @@ With the example data, the policy matches `business_block`: `engagement_drop` 0.
 - **name**, **version** – Identify the contract for audit; bump version when you change policies or combine rule.
 - **combine** – How to merge outcomes from multiple policies:
   - **worst_case** – Any BLOCK wins; else any REQUIRE_APPROVAL; else PASS.
-- **policies** – List of policy file paths (relative to the contract file): e.g. `policy.yaml` or `policies/security.yaml`.
+- **policies** – List of policy file paths (relative to the contract file): e.g. `policy.yaml` or `policies/safety-and-blocking.yaml` (see `geval init`).
 
 ## Policy format
 
