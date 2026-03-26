@@ -1,8 +1,7 @@
-# Example contract: one policy for simple demo.
-# For multiple policies, add e.g. policies/security.yaml and policies/quality.yaml and list them here.
+# Example contract: one policy for a simple demo.
+# `geval init` uses descriptive policy paths like policies/safety-and-blocking.yaml — list every file here.
 
 name: demo
 version: "1.0.0"
-combine: worst_case
 policies:
   - path: policy.yaml

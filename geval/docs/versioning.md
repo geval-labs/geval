@@ -4,20 +4,19 @@ Every decision and every action in Geval is auditable. Nothing should be updated
 
 ## Contract versioning
 
-A **contract** is a YAML file that lists one or more policy paths and a combination rule. It has:
+A **contract** is a YAML file that lists one or more policy paths (and optionally how to combine outcomes). It has:
 
-- **name** – Identifies the contract (e.g. `release-gate`). Required.
-- **version** – **Bump when you add/remove policies or change the combine rule.**
+- **name** – Identifies the contract (e.g. `ai-release-quality-gate`). Required.
+- **version** – **Bump when you add/remove policies or change how you expect them to behave.**
 
 Example:
 
 ```yaml
-name: release-gate
+name: ai-release-quality-gate
 version: "2.1.0"
-combine: worst_case
 policies:
-  - path: policies/security.yaml
-  - path: policies/quality.yaml
+  - path: policies/safety-and-blocking.yaml
+  - path: policies/quality-and-approval.yaml
 ```
 
 The decision artifact records `contract_name` and `contract_version` so you always know which contract produced a decision.

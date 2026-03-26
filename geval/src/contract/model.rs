@@ -26,7 +26,7 @@ pub struct ContractDef {
     #[serde(default)]
     pub combine: CombineRule,
 
-    /// List of policy file paths (e.g. ["security.yaml", "quality.yaml"]).
+    /// List of policy file paths (e.g. `policies/safety-and-blocking.yaml` from `geval init`).
     /// Paths are resolved relative to the directory containing the contract file.
     pub policies: Vec<PolicyRef>,
 }
