@@ -20,6 +20,12 @@
 
 ---
 
+## Demo video
+
+**[Watch the Geval demo on YouTube →](https://youtu.be/v6LuxIshgDU)** — walkthrough of how Geval turns signals and policy rules into **PASS**, **REQUIRE_APPROVAL**, or **BLOCK**.
+
+---
+
 ## Try it in under a minute
 
 **1. Download** (pick your OS):
@@ -234,6 +240,7 @@ Run with `./geval` (or ensure this repo’s binary is the one in your PATH):
 
 | Guide | Description |
 |-------|-------------|
+| [**Demo video (YouTube)**](https://youtu.be/v6LuxIshgDU) | Walkthrough of Geval |
 | [**Config generator (web)**](https://config.geval.io) | Fill in forms → download `contract.yaml` and policies |
 | [**Architecture**](geval/docs/architecture.md) | Contract = multiple policies + combine rule; module layout |
 | [**Signals and rules**](geval/docs/signals-and-rules.md) | Non-uniform signals (scores, presence-only, mix); how rules use them |
@@ -263,6 +270,7 @@ MIT © [Geval Contributors](https://github.com/geval-labs/geval/graphs/contribut
 
 <p align="center">
   <a href="https://geval.io">Website</a> •
+  <a href="https://youtu.be/v6LuxIshgDU">Demo video</a> •
   <a href="https://config.geval.io">Config generator</a> •
   <a href="https://github.com/geval-labs/geval/releases">Releases</a> •
   <a href="https://github.com/geval-labs/geval">GitHub</a>
